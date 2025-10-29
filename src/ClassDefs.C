@@ -2530,6 +2530,10 @@ void FRAME::READ_XYZF(ifstream &TRAJ_INPUT, const JOB_CONTROL &CONTROLS, const v
 		if(CONTROLS.FIT_ENER) // We're fitting to the absolute energy, + an offset (column of 1's at end of A-matrix)
 			QM_POT_ENER = stod(tokens[tokens.size()-1]);
 
+	if((CONTROLS.CHEBY_LAMB_ORDER > 1))
+		if(CONTROLS.FIT_LAMB) // We're fitting to the absolute energy, + an offset (column of 1's at end of A-matrix)
+			QM_LAMB = stod(tokens[tokens.size()-2]);
+
 	
 	// Check that outer cutoffs do not exceed half of the boxlength
 	// with consideration of layering

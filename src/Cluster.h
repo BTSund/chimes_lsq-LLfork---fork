@@ -21,6 +21,8 @@ class PAIRS	// NEEDS UPDATING
 	  	double ATM2MAS;       
 	  	double S_MINIM; 		      // Minimum allowed pair distance for fitting
 	  	double S_MAXIM; 		      // Maximum allowed pair distance for fitting
+	  	double L_MINIM; 		      // Minimum allowed pair distance for fitting
+	  	double L_MAXIM; 		      // Maximum allowed pair distance for fitting
 		
 		double KILLLEN;			      // Pair distance below which to kill the simulation
 
@@ -28,6 +30,8 @@ class PAIRS	// NEEDS UPDATING
 	  	double X_MAXIM; 		      // Maximum transformed Cheby
 	  	double X_AVG;			      // Average of transformed Cheby limits.
 	  	double X_DIFF;  		      // Difference between transformed cheby limits.
+	  	double XL_AVG;			      // Average of transformed Cheby limits.
+	  	double XL_DIFF;  		      // Difference between transformed cheby limits.
 
 	  	int N_CFG_CONTRIB;		      // How many configurations actually contribute to fitting this pair??
 		      
@@ -36,6 +40,7 @@ class PAIRS	// NEEDS UPDATING
 	  					      //  and arr, by default, set to -1 and 1 for low and high, respectively.
 
 	  	int    SNUM;			      // Number of fitting parameters for pair ... WHY WOULD THIS BE DIFFERENT FOR DIFFERENT PAIR TYPES?***
+      int    SNUM_LAMBDA;		      // Number of fitting parameters for lambda-dependent part of pair
 	  	int    SNUM_3B_CHEBY;		      // Number of fitting parameters for pair ... WHY WOULD YOU NEED BOTH SNUM AND THIS SPECIAL CHEBY ONE?***
 	  	int    SNUM_4B_CHEBY;		      // Number of fitting parameters for pair ... WHY WOULD YOU NEED BOTH SNUM AND THIS SPECIAL CHEBY ONE?***
 		      

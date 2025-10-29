@@ -204,6 +204,7 @@ int main(int argc, char* argv[])
 		if ( (ATOM_PAIRS[i].PAIRTYP == "CHEBYSHEV" ) )	
 		{
 			ATOM_PAIRS[i].SNUM = CONTROLS.CHEBY_ORDER;
+			ATOM_PAIRS[i].SNUM_LAMBDA = CONTROLS.CHEBY_LAMB_ORDER;
 
 			ATOM_PAIRS[i].SNUM_3B_CHEBY = CONTROLS.CHEBY_3B_ORDER;
 			ATOM_PAIRS[i].SNUM_4B_CHEBY = CONTROLS.CHEBY_4B_ORDER;
@@ -214,7 +215,7 @@ int main(int argc, char* argv[])
 			cout << "ERROR: Unknown pairtype: " << ATOM_PAIRS[i].PAIRTYP << endl;
 		}
 		
-		CONTROLS.TOT_SNUM += ATOM_PAIRS[i].SNUM;
+		CONTROLS.TOT_SNUM += ATOM_PAIRS[i].SNUM * ATOM_PAIRS[i].SNUM_LAMBDA;
 	}
 
 	

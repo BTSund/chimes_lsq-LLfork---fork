@@ -706,6 +706,183 @@ void Cheby::map_indices_int(CLUSTER & cluster, vector<int> & atom_type_idx, vect
 #endif
 }
 
+// void Cheby::Deriv_2B(A_MAT & A_MATRIX)
+//  // Calculate derivatives of the forces wrt the Chebyshev parameters. Stores minimum distance between a pair of atoms in minD[i].
+// {
+// 	XYZ RAB; 		// Replaces  Rab[3];
+// 	double rlen;
+// 	int vstart;
+// 	static double *Tn, *Tnd;
+// 	static bool called_before = false;
+
+// 	double fcut; 
+// 	double fcutderiv; 				
+// 	double deriv;
+// 	double tmp_doub; 	
+
+// 	double inv_vol = 1.0 / SYSTEM.BOXDIM.VOL;
+
+// 	if ( ! called_before ) 
+// 	{
+// 		called_before = true;
+// 		int dim = 0;
+
+// 		for ( int i = 0; i < FF_2BODY.size(); i++ ) 
+// 			if (FF_2BODY[i].SNUM > dim ) 
+// 				dim = FF_2BODY[i].SNUM;	 
+
+// 		dim++;
+// 		Tn   = new double [dim];
+// 		Tnd  = new double [dim];
+
+// 	}
+
+// 	 // Main loop for Chebyshev terms:
+
+// 	 string TEMP_STR;
+// 	 int curr_pair_type_idx;
+
+// 	 // Set up for layering
+
+// 	 int fidx_a2;
+// 	 int a2start, a2end, a2;
+
+// 	 for(int a1=0;a1<SYSTEM.ATOMS;a1++)		// Double sum over atom pairs
+// 	 {
+// 		 a2start = 0;
+// 		 a2end   = NEIGHBOR_LIST.LIST[a1].size();
+
+// 		 for(int a2idx=a2start; a2idx<a2end; a2idx++)	
+// 		 {			
+// 			 a2 = NEIGHBOR_LIST.LIST[a1][a2idx];		
+
+// 			 curr_pair_type_idx = get_pair_index(a1, a2, SYSTEM.ATOMTYPE_IDX, CONTROLS.NATMTYP,SYSTEM.PARENT) ;
+
+// 			 //calculate vstart: (index for populating OO, OH, or HH column block of A).
+
+// 			 vstart = curr_pair_type_idx * FF_2BODY[curr_pair_type_idx].SNUM;
+
+// 			 // Get pair distance
+
+// 			 rlen = get_dist(SYSTEM, RAB, a1, a2);	// Updates RAB!
+
+// 			 if ( (rlen < FF_2BODY[curr_pair_type_idx].MIN_FOUND_DIST))	
+// 				 FF_2BODY[curr_pair_type_idx].MIN_FOUND_DIST = rlen;
+
+// 			 if(rlen > FF_2BODY[curr_pair_type_idx].S_MINIM and rlen < FF_2BODY[curr_pair_type_idx].S_MAXIM)
+// 			 {
+// 				 FF_2BODY[curr_pair_type_idx].N_CFG_CONTRIB++;
+
+// 				 // Do the distance transformation
+// 				 double x_diff = FF_2BODY[curr_pair_type_idx].X_DIFF ;
+// 				 double x_avg  = FF_2BODY[curr_pair_type_idx].X_AVG ;
+// 				 set_polys(curr_pair_type_idx, Tn, Tnd, rlen, x_diff, x_avg, FF_2BODY[curr_pair_type_idx].SNUM,
+// 					 FF_2BODY[curr_pair_type_idx].S_MINIM) ;
+
+// 				 // fcut and fcutderv are the cutoff functions (1-r/rcut)**3 and its
+// 				 // derivative -3 (1-r/rcut)**2/rcut.  This ensures that
+// 				 // the force goes to 0 as r goes to rcut.
+// 				 // This is not a penalty function in the usual sense.  
+// 				 // I don't see any reason to have a scaling on the cutoff.
+
+// 				 // That will simply multiply all the forces by a constant,
+// 				 // which will be canceled out during the force matching process.
+// 				 // (LEF)
+
+// 				 // fcut and fcutderv are the form that the penalty func and its derivative for the morse-type pair distance transformation
+
+// 				 FF_2BODY[curr_pair_type_idx].FORCE_CUTOFF.get_fcut(fcut, fcutderiv, rlen, 0,FF_2BODY[curr_pair_type_idx].S_MAXIM);
+				 
+// 				 // cout << "2B-EVAL, FCUT STYLE: " << FF_2BODY[curr_pair_type_idx].FORCE_CUTOFF.to_string() << endl;				 
+				 
+
+// 				 // Compute part of the derivative
+// 				 // NOTE: All these extra terms are coming from:
+// 				 //
+// 				 // 1. Chain rule to account for transformation from morse-type pair distance to x
+// 				 // 2. Product rule coming from pair distance dependence of fcut, the penalty function
+
+// 				 fidx_a2 = SYSTEM.PARENT[a2];
+
+// 				 for ( int i=0; i<FF_2BODY[curr_pair_type_idx].SNUM; i++ ) 
+// 				 {
+// 					// Self-scaling needed for very small cells with self-interactions.  It is 1 for the big cell neighbor list.
+// 					tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1] + fcutderiv * Tn[i+1] );
+
+// 					// Finally, account for the x, y, and z unit vectors
+
+// 					deriv = tmp_doub * RAB.X / rlen;
+// 					A_MATRIX.FORCES[a1     ][vstart+i].X += deriv;
+// 					A_MATRIX.FORCES[fidx_a2][vstart+i].X -= deriv;
+
+// 					deriv = tmp_doub * RAB.Y / rlen; 
+// 					A_MATRIX.FORCES[a1     ][vstart+i].Y += deriv;
+// 					A_MATRIX.FORCES[fidx_a2][vstart+i].Y -= deriv;
+
+// 					deriv = tmp_doub * RAB.Z / rlen;
+// 					A_MATRIX.FORCES[a1     ][vstart+i].Z += deriv;
+// 					A_MATRIX.FORCES[fidx_a2][vstart+i].Z -= deriv;
+
+// 					if (CONTROLS.FIT_STRESS)
+// 					{
+// 						A_MATRIX.STRESSES[vstart+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;
+// 						A_MATRIX.STRESSES[vstart+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;
+// 						A_MATRIX.STRESSES[vstart+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;      
+// 					}
+
+// 					else if (CONTROLS.FIT_STRESS_ALL)
+// 					{
+// 						A_MATRIX.STRESSES[vstart+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;   // xx
+// 						A_MATRIX.STRESSES[vstart+i].XY -= tmp_doub * RAB.X * RAB.Y / rlen;   // xy
+// 						A_MATRIX.STRESSES[vstart+i].XZ -= tmp_doub * RAB.X * RAB.Z / rlen;   // xz
+
+// 						A_MATRIX.STRESSES[vstart+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;   // yy
+// 						A_MATRIX.STRESSES[vstart+i].YZ -= tmp_doub * RAB.Y * RAB.Z / rlen;   // yz
+// 						A_MATRIX.STRESSES[vstart+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;   // zz
+// 					}
+
+// 					if(CONTROLS.FIT_ENER) 
+// 					{
+// 						A_MATRIX.FRAME_ENERGIES[vstart+i]    +=  NEIGHBOR_LIST.PERM_SCALE[2] * fcut * Tn[i+1];
+// 					}
+// 				 }
+// 			 } else if (false)//( rlen <= FF_2BODY[curr_pair_type_idx].S_MINIM ) 
+// 			 {
+// 				 cout << "Error: distances for pair type " << curr_pair_type_idx + 1 << " = " << rlen << endl ;
+// 				 cout << "Minimim allowed distance = " << FF_2BODY[curr_pair_type_idx].S_MINIM << endl ;
+// 				 EXIT_MSG("Distance too small") ;
+// 			 }
+// 		 }
+// 	 }
+
+// 	 if (CONTROLS.FIT_STRESS)
+// 	 {	 
+// 		 for ( int i = 0; i < CONTROLS.TOT_SNUM; i++ ) 
+// 		 {
+// 			 A_MATRIX.STRESSES[i].XX *= inv_vol;
+// 			 A_MATRIX.STRESSES[i].YY *= inv_vol;
+// 			 A_MATRIX.STRESSES[i].ZZ *= inv_vol;	
+// 		 }
+// 	 }
+// 	 else if (CONTROLS.FIT_STRESS_ALL)
+// 	 {		
+// 		for ( int i = 0; i < CONTROLS.TOT_SNUM; i++ ) 
+// 		{
+// 			A_MATRIX.STRESSES[i].XX *= inv_vol;
+// 			A_MATRIX.STRESSES[i].XY *= inv_vol;
+// 			A_MATRIX.STRESSES[i].XZ *= inv_vol;    
+			
+// 			A_MATRIX.STRESSES[i].YY *= inv_vol;
+// 			A_MATRIX.STRESSES[i].YZ *= inv_vol;
+// 			A_MATRIX.STRESSES[i].ZZ *= inv_vol;
+// 		}
+
+// 	 }
+
+//   return;
+// }
+
+
 void Cheby::Deriv_2B(A_MAT & A_MATRIX)
  // Calculate derivatives of the forces wrt the Chebyshev parameters. Stores minimum distance between a pair of atoms in minD[i].
 {
@@ -713,9 +890,11 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 	double rlen;
 	int vstart;
 	static double *Tn, *Tnd;
+	static double *Tn_L, *Tnd_L;
 	static bool called_before = false;
 
 	double fcut; 
+	double labm; 
 	double fcutderiv; 				
 	double deriv;
 	double tmp_doub; 	
@@ -734,6 +913,9 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 		dim++;
 		Tn   = new double [dim];
 		Tnd  = new double [dim];
+
+		Tn_L   = new double [dim];
+		Tnd_L  = new double [dim];
 
 	}
 
@@ -778,6 +960,10 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 				 double x_avg  = FF_2BODY[curr_pair_type_idx].X_AVG ;
 				 set_polys(curr_pair_type_idx, Tn, Tnd, rlen, x_diff, x_avg, FF_2BODY[curr_pair_type_idx].SNUM,
 					 FF_2BODY[curr_pair_type_idx].S_MINIM) ;
+				 double xl_diff = FF_2BODY[curr_pair_type_idx].XL_DIFF ;
+				 double xl_avg  = FF_2BODY[curr_pair_type_idx].XL_AVG ;
+				 set_polys(curr_pair_type_idx, Tn_L, Tnd_L, lamb, xl_diff, xl_avg, FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA,
+					 FF_2BODY[curr_pair_type_idx].L_MINIM) ;
 
 				 // fcut and fcutderv are the cutoff functions (1-r/rcut)**3 and its
 				 // derivative -3 (1-r/rcut)**2/rcut.  This ensures that
@@ -804,48 +990,51 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 
 				 fidx_a2 = SYSTEM.PARENT[a2];
 
+				 for ( int j=0; j<FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA; j++ ) 
+				 {
 				 for ( int i=0; i<FF_2BODY[curr_pair_type_idx].SNUM; i++ ) 
 				 {
 					// Self-scaling needed for very small cells with self-interactions.  It is 1 for the big cell neighbor list.
-					tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1] + fcutderiv * Tn[i+1] );
+					tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1]*Tnd_L[j] + fcutderiv * Tn[i+1] * Tn_L[j] );
 
 					// Finally, account for the x, y, and z unit vectors
 
 					deriv = tmp_doub * RAB.X / rlen;
-					A_MATRIX.FORCES[a1     ][vstart+i].X += deriv;
-					A_MATRIX.FORCES[fidx_a2][vstart+i].X -= deriv;
+					A_MATRIX.FORCES[a1     ][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].X += deriv;
+					A_MATRIX.FORCES[fidx_a2][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].X -= deriv;
 
 					deriv = tmp_doub * RAB.Y / rlen; 
-					A_MATRIX.FORCES[a1     ][vstart+i].Y += deriv;
-					A_MATRIX.FORCES[fidx_a2][vstart+i].Y -= deriv;
+					A_MATRIX.FORCES[a1     ][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].Y += deriv;
+					A_MATRIX.FORCES[fidx_a2][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].Y -= deriv;
 
 					deriv = tmp_doub * RAB.Z / rlen;
-					A_MATRIX.FORCES[a1     ][vstart+i].Z += deriv;
-					A_MATRIX.FORCES[fidx_a2][vstart+i].Z -= deriv;
+					A_MATRIX.FORCES[a1     ][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].Z += deriv;
+					A_MATRIX.FORCES[fidx_a2][vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].Z -= deriv;
 
 					if (CONTROLS.FIT_STRESS)
 					{
-						A_MATRIX.STRESSES[vstart+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;
-						A_MATRIX.STRESSES[vstart+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;
-						A_MATRIX.STRESSES[vstart+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;      
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;      
 					}
 
 					else if (CONTROLS.FIT_STRESS_ALL)
 					{
-						A_MATRIX.STRESSES[vstart+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;   // xx
-						A_MATRIX.STRESSES[vstart+i].XY -= tmp_doub * RAB.X * RAB.Y / rlen;   // xy
-						A_MATRIX.STRESSES[vstart+i].XZ -= tmp_doub * RAB.X * RAB.Z / rlen;   // xz
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].XX -= tmp_doub * RAB.X * RAB.X / rlen;   // xx
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].XY -= tmp_doub * RAB.X * RAB.Y / rlen;   // xy
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].XZ -= tmp_doub * RAB.X * RAB.Z / rlen;   // xz
 
-						A_MATRIX.STRESSES[vstart+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;   // yy
-						A_MATRIX.STRESSES[vstart+i].YZ -= tmp_doub * RAB.Y * RAB.Z / rlen;   // yz
-						A_MATRIX.STRESSES[vstart+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;   // zz
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].YY -= tmp_doub * RAB.Y * RAB.Y / rlen;   // yy
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].YZ -= tmp_doub * RAB.Y * RAB.Z / rlen;   // yz
+						A_MATRIX.STRESSES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i].ZZ -= tmp_doub * RAB.Z * RAB.Z / rlen;   // zz
 					}
 
 					if(CONTROLS.FIT_ENER) 
 					{
-						A_MATRIX.FRAME_ENERGIES[vstart+i]    +=  NEIGHBOR_LIST.PERM_SCALE[2] * fcut * Tn[i+1];
+						A_MATRIX.FRAME_ENERGIES[vstart+j*FF_2BODY[curr_pair_type_idx].SNUM_LAMBDA+i]    +=  NEIGHBOR_LIST.PERM_SCALE[2] * fcut * Tn[i+1] * Tn_L[j];
 					}
 				 }
+				}
 			 } else if (false)//( rlen <= FF_2BODY[curr_pair_type_idx].S_MINIM ) 
 			 {
 				 cout << "Error: distances for pair type " << curr_pair_type_idx + 1 << " = " << rlen << endl ;

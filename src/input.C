@@ -200,6 +200,8 @@ void INPUT::PARSE_INFILE_LSQ(  JOB_CONTROL	 & CONTROLS,
 	PARSE_CONTROLS_FITCOUL(CONTROLS);
 	PARSE_CONTROLS_FITSTRS(CONTROLS);
 	PARSE_CONTROLS_FITENER(CONTROLS);
+	PARSE_CONTROLS_FITFORC(CONTROLS);
+	PARSE_CONTROLS_LAMBFIT(CONTROLS);
 	PARSE_CONTROLS_PAIRTYP(CONTROLS);
 	PARSE_CONTROLS_CHBTYPE(CONTROLS);
 	PARSE_CONTROLS_CHEBYFIX(CONTROLS);
@@ -276,6 +278,7 @@ void INPUT::PARSE_INFILE_MD (JOB_CONTROL & CONTROLS, NEIGHBORS & NEIGHBOR_LIST)
 	PARSE_CONTROLS_PRNTVEL(CONTROLS);
 	PARSE_CONTROLS_GETSTRS(CONTROLS);
 	PARSE_CONTROLS_GETENER(CONTROLS);
+	PARSE_CONTROLS_GETFORC(CONTROLS);
 	PARSE_CONTROLS_FORDFTB(CONTROLS);
 	
 	// Run MD sanity checks
@@ -599,6 +602,69 @@ void INPUT::PARSE_CONTROLS_FITENER(JOB_CONTROL & CONTROLS)
 				if(CONTROLS.NENER>=0)
 					cout << "    			 ...will fit energies for first " << CONTROLS.NENER << " frames." << endl;
 			}	
+		}
+	}
+}
+void INPUT::PARSE_CONTROLS_FITFORC(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("FITFORC", CONTENTS(i)))		
+		{
+			CONTROLS.FIT_FORC = convert_bool(CONTENTS(i+1,0),i+1);
+			if ( RANK == 0 )
+			{
+				cout << "	# FITFORC #: " << bool2str(CONTROLS.FIT_FORC) << endl;	
+			}	
+		}
+	}
+}
+void INPUT::PARSE_CONTROLS_FITLAMB(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("FITLAMB", CONTENTS(i)))		
+		{
+			CONTROLS.FIT_LAMB = convert_bool(CONTENTS(i+1,0),i+1);
+			if ( RANK == 0 )
+			{
+				cout << "	# FITLAMB #: " << bool2str(CONTROLS.FIT_LAMB) << endl;	
+			}	
+		}
+	}
+}
+void INPUT::PARSE_CONTROLS_LAMBFIT(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("LAMBFIT", CONTENTS(i)))		
+		{
+			FF_TYPE = CONTENTS(i+1,0);
+			
+			if (FF_TYPE != "CHEBYSHEV") // These are not supported:  && FF_TYPE != "LJ" && FF_TYPE != "STILLIN")
+			{
+				cout << endl;
+				cout << "ERROR: Unrecognized Lambda type. Acceptable options are:" << endl;
+				cout << "CHEBYSHEV"    << endl;
+				exit(1);
+			
+			if ( RANK == 0 )
+			{
+				cout << "	# LAMBFIT #: " << FF_TYPE;
+			}
+			CONTROLS.CHEBY_LAMB_ORDER = convert_int(CONTENTS(i+1,0),i+1);
+			CONTROLS.CHEBY_LAMB_ORDER = convert_int(CONTENTS(i+1,0),i+1);
+			
+			if ( RANK == 0 ) 
+				cout << "	             " << "Will use lambda order: " << CONTROLS.CHEBY_LAMB_ORDER << endl;
+				
+			}
 		}
 	}
 }
@@ -1099,6 +1165,8 @@ void INPUT::PARSE_TOPOLOGY_PAIRIDX(JOB_CONTROL & CONTROLS, vector<PAIRS> & ATOM_
 				ATOM_PAIRS[TEMP_INT].S_MINIM = convert_double(CONTENTS(c+1+i,3),c+1+i);
 				ATOM_PAIRS[TEMP_INT].S_MAXIM = convert_double(CONTENTS(c+1+i,4),c+1+i);
 				ATOM_PAIRS[TEMP_INT].LAMBDA  = convert_double(CONTENTS(c+1+i,6),c+1+i);
+				ATOM_PAIRS[TEMP_INT].L_MINIM = convert_double(CONTENTS(c+1+i,7),c+1+i);
+				ATOM_PAIRS[TEMP_INT].L_MAXIM = convert_double(CONTENTS(c+1+i,8),c+1+i);
 				
 				ATOM_PAIRS[TEMP_INT].MIN_FOUND_DIST = 	1.0e10;	// Set an initial minimum distance	
 				
@@ -1356,6 +1424,7 @@ void INPUT::PARSE_CONTROLS_INITIAL(JOB_CONTROL & CONTROLS, NEIGHBORS & NEIGHBOR_
 	CONTROLS.BUILD            = false;
 	CONTROLS.FIT_STRESS       = false;
 	CONTROLS.FIT_ENER         = false;
+	CONTROLS.FIT_FORC         = false;
 	CONTROLS.CHECK_FORCE      = false;
 	CONTROLS.FORDFTB          = false;
 	
@@ -2297,6 +2366,14 @@ void INPUT::PARSE_CONTROLS_GETENER(JOB_CONTROL & CONTROLS)
 	// Shared with LSQ ... Used for comparing fit to force field
 	PARSE_CONTROLS_FITENER(CONTROLS);
 }
+
+
+void INPUT::PARSE_CONTROLS_GETFORC(JOB_CONTROL & CONTROLS)
+{
+	// Shared with LSQ ... Used for comparing fit to force field
+	PARSE_CONTROLS_FITFORC(CONTROLS);
+}
+
 
 void INPUT::PARSE_CONTROLS_FORDFTB(JOB_CONTROL & CONTROLS)
 {

@@ -187,11 +187,14 @@ public:
 	int  NSTRESS;		      // Only fit stresses for first NSTRESS frames of trajectory
 	bool FIT_ENER;  	      // Should the total frame energy be included in the fit?
 	bool FIT_ENER_EVER ;	      // Is energy ever included in the fit ?
+	bool FIT_FORC;  	      // Should the total frame energy be included in the fit?
+	bool FIT_LAMB;  	      // Should the total frame energy be included in the fit?
 	int  NENER;
 	bool CALL_EWALD;	      // Should ewald subroutines be called?
 
 	int   NFRAMES;  	      // Number of frames in the movie file
 	int   CHEBY_ORDER;	      // Order of Chebyshev polynomial if used... set to 8 for DFTB Erep polynomial
+	int   CHEBY_LAMB_ORDER;   // Order of the lambda dimension
 	int   CHEBY_3B_ORDER;	      // how many polynomials for 3b cheby?
 	int   CHEBY_4B_ORDER;	      // how many polynomials for 4b cheby?
 	int   NUM_3B_CHEBY;	      // How many parameters are associated with cheby order CHEBY_3B_ORDER?
@@ -234,6 +237,7 @@ public:
 	{
 		NFRAMES         = 0;	// Number of frames in the movie file
 		CHEBY_ORDER     = 0;	// Order of Chebyshev polynomial if used... set to 8 for DFTB Erep polynomial
+		CHEBY_LAMB_ORDER= 1;	// Order of Chebyshev polynomial if used... set to 8 for DFTB Erep polynomial
 		CHEBY_TYPE      = Cheby_trans::NONE ;
 		CHEBY_3B_ORDER  = 0;   
 		CHEBY_4B_ORDER  = 0;	// how many polynomials for 4b cheby?
@@ -265,6 +269,8 @@ public:
 		FIT_ENER          = false;
 		FIT_STRESS        = false;
 		FIT_STRESS_ALL    = false;
+		FIT_FORC          = true;
+		FIT_LAMB          = false;
 		NSTRESS           = -1;
 		NENER             = -1;
 		FORDFTB           = false;
@@ -375,6 +381,7 @@ public:
 	 XYZ STRESS_TENSORS_Z;
 
 	 double         QM_POT_ENER;		// This is the potential energy of the QM calculation!
+	 double         QM_LAMB;		// This is the potential energy of the QM calculation!
 	 vector<double> QM_ENERGY_OFFSET;    	// This is the energy offset between MD and QM energy, as determined by lsq[2].py.
 	 vector<double> QM_POT_ENER_PER_ATOM;	// And this is for each atom in the frame, from QM
 	 vector<int>    NATOMS_OF_TYPE;	    	// How many atoms of each type there are
@@ -382,6 +389,7 @@ public:
 	 double 	TEMPERATURE;				// This is the RUNNING temperature, not the set temperature!
 	 double 	PRESSURE;					// This is the RUNNING pressure, not the set pressure!
 	 double 	AVG_TEMPERATURE;			// Only used for velocity scaling-type thermostats
+	 double 	LAMB;			// Only used for velocity scaling-type thermostats
 	 double 	PRESSURE_XYZ;				// This is the running pressure sans the ideal gas term
 	 //XYZ	PRESSURE_TENSORS_XYZ;			// These are the RUNNING pressure tensors, no the set pressure tensors! ...sans the ideal gas term
 	 vector<XYZ> PRESSURE_TENSORS_XYZ_ALL; 		// These are the RUNNING pressure tensors, no the set pressure tensors! ...sans the ideal gas term ... includes off-diagonals
