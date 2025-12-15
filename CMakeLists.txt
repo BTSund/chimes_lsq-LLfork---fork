@@ -86,32 +86,32 @@ ENDIF (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 # Define an executable target
 
-add_executable(chimes_md
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/chimes_md.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/functions.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Ewald.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ClassDefs.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fcut.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Cluster.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/util.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Cheby.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/io_styles.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/feexcept.C 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/input.C
-)
+# add_executable(chimes_md
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/chimes_md.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/functions.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/Ewald.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/ClassDefs.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fcut.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/Cluster.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/util.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/Cheby.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/io_styles.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/feexcept.C 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/src/input.C
+# )
 
 # Define properties for the executable target
 
-target_include_directories(chimes_md PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-target_compile_features   (chimes_md PRIVATE cxx_std_11)
-if (USE_MPI)
-target_link_libraries     (chimes_md ${MPI_LIBRARIES})
-endif (USE_MPI)
-target_link_directories   (chimes_md PUBLIC imports/chimes_calculator/build)
-target_link_libraries     (chimes_md libchimescalc.so)
-set_target_properties(chimes_md PROPERTIES INSTALL_RPATH ${CMAKE_CURRENT_SOURCE_DIR}/imports/chimes_calculator/build/)
+# target_include_directories(chimes_md PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+# target_compile_features   (chimes_md PRIVATE cxx_std_11)
+# if (USE_MPI)
+# target_link_libraries     (chimes_md ${MPI_LIBRARIES})
+# endif (USE_MPI)
+# target_link_directories   (chimes_md PUBLIC imports/chimes_calculator/build)
+# target_link_libraries     (chimes_md libchimescalc.so)
+# set_target_properties(chimes_md PROPERTIES INSTALL_RPATH ${CMAKE_CURRENT_SOURCE_DIR}/imports/chimes_calculator/build/)
 
 
-IF (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT) 
-	install(TARGETS chimes_md DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
-ENDIF (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# IF (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT) 
+# 	install(TARGETS chimes_md DESTINATION ${CMAKE_INSTALL_PREFIX} OPTIONAL)
+# ENDIF (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

@@ -2527,8 +2527,20 @@ void FRAME::READ_XYZF(ifstream &TRAJ_INPUT, const JOB_CONTROL &CONTROLS, const v
 	BOXDIM.UPDATE_CELL();	
 
 	if((CONTROLS.NENER < 0) || (i<CONTROLS.NENER))
-		if(CONTROLS.FIT_ENER) // We're fitting to the absolute energy, + an offset (column of 1's at end of A-matrix)
+		if(CONTROLS.FIT_ENER){ // We're fitting to the absolute energy, + an offset (column of 1's at end of A-matrix)
 			QM_POT_ENER = stod(tokens[tokens.size()-1]);
+			if(CONTROLS.USE_ALCH){
+				ALCH_LAMBDA = stod(tokens[tokens.size()-2]);
+			}
+		}
+	if(!CONTROLS.FIT_ENER){ // We're fitting to the absolute energy, + an offset (column of 1's at end of A-matrix)
+		if(CONTROLS.USE_ALCH){
+			ALCH_LAMBDA = stod(tokens[tokens.size()-1]);
+		}
+	}
+	if(CONTROLS.USE_ALCH){
+		cout << "ClassDefs.C Lambda Line 2542: " << ALCH_LAMBDA << endl;
+	}
 
 	
 	// Check that outer cutoffs do not exceed half of the boxlength

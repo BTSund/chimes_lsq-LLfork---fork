@@ -23,16 +23,7 @@ echo "Attempting to perform a fresh install"
 ./uninstall.sh
 
 echo "Imports directory will be deleted and re-cloned/installed. Proceed? (y/n)"
-read PROCEED
-if [[ "$PROCEED" == "n" ]] ; then
-    echo 'Will use pre-existing imports directory'
-else
-    echo "Are you sure? Imports directory will be deleted! (y/n)"
-    read PROCEED
-    if [[ "$PROCEED" == "y" ]] ; then
-        rm -rf imports
-    fi
-fi
+        
 
 
 
@@ -77,10 +68,6 @@ module list
 
 # Grab and install dependencies
 
-if [[ ! -d imports ]] ; then
-    ./clone-all.sh
-fi
-
 # Compile dlars if mpi compilers are available on a HPC platform
 
 if [[ -v hosttype ]] ; then
@@ -97,11 +84,6 @@ if [[ -v hosttype ]] ; then
 fi
 
 # Compile molanal
-
-cd contrib/molanal/src
-make molanal.new
-cd ../../..
-
 
 # Clean up previous installation,
 
@@ -160,22 +142,22 @@ make
 cp ../src/chimes_lsq.py .
 cp ../src/post_proc_chimes_lsq.py .
 
-if [ $DOMPI -eq 1 ] ;then
+# if [ $DOMPI -eq 1 ] ;then
  
- # Create some executables for the ALD
+#  # Create some executables for the ALD
 
-    cp chimes_md chimes_md-mpi
-    cp chimes_lsq chimes_lsq.tmp
+#     cp chimes_md chimes_md-mpi
+#     cp chimes_lsq chimes_lsq.tmp
 
-    my_flags=`echo $my_flags | awk '{for(i=1;i<=NF; i++){if($i~"DUSE_MPI=1"){$i="-DUSE_MPI=0"}}{print}}'`
+#     my_flags=`echo $my_flags | awk '{for(i=1;i<=NF; i++){if($i~"DUSE_MPI=1"){$i="-DUSE_MPI=0"}}{print}}'`
 
-    cmake $my_flags ..
-    make
+#     cmake $my_flags ..
+#     make
 
-    cp chimes_md chimes_md-serial
-    cp chimes_md-mpi chimes_md
-    mv chimes_lsq.tmp chimes_lsq
-fi
+#     cp chimes_md chimes_md-serial
+#     cp chimes_md-mpi chimes_md
+#     mv chimes_lsq.tmp chimes_lsq
+# fi
 
 if [ ! -z $PREFX ] ; then
         make install

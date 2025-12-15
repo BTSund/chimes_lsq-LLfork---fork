@@ -189,6 +189,15 @@ public:
 	bool FIT_ENER_EVER ;	      // Is energy ever included in the fit ?
 	int  NENER;
 	bool CALL_EWALD;	      // Should ewald subroutines be called?
+	
+	///////////////////////////////////////////////
+	// Variables for alchemical lambda
+	///////////////////////////////////////////////
+
+	bool	USE_ALCH;
+	int		ALCH_2B_ORDER;
+	int		ALCH_3B_ORDER;
+	int		ALCH_4B_ORDER;
 
 	int   NFRAMES;  	      // Number of frames in the movie file
 	int   CHEBY_ORDER;	      // Order of Chebyshev polynomial if used... set to 8 for DFTB Erep polynomial
@@ -254,6 +263,12 @@ public:
 		
 		FCUT_LINE = "CUBIC";
 		FIT_ENER_EVER = false ;
+			
+
+		USE_ALCH = true; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_2B_ORDER = 2; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_3B_ORDER = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_4B_ORDER = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
 			
 
 		// Default is the same as the ChIMES calculator.
@@ -375,6 +390,7 @@ public:
 	 XYZ STRESS_TENSORS_Z;
 
 	 double         QM_POT_ENER;		// This is the potential energy of the QM calculation!
+	 double			ALCH_LAMBDA;		// Alchemical lambda
 	 vector<double> QM_ENERGY_OFFSET;    	// This is the energy offset between MD and QM energy, as determined by lsq[2].py.
 	 vector<double> QM_POT_ENER_PER_ATOM;	// And this is for each atom in the frame, from QM
 	 vector<int>    NATOMS_OF_TYPE;	    	// How many atoms of each type there are
