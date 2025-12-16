@@ -192,6 +192,9 @@ void INPUT::PARSE_INFILE_LSQ(  JOB_CONTROL	 & CONTROLS,
 	// For assigning LSQ variables: "Control Variables" 
 	
 	PARSE_CONTROLS_TRJFILE(CONTROLS);	
+	PARSE_CONTROLS_FITALAM(CONTROLS);
+	PARSE_CONTROLS_ALAMORD(CONTROLS);
+	PARSE_CONTROLS_ALAMCUT(CONTROLS);	
 	PARSE_CONTROLS_WRAPTRJ(CONTROLS);
 	PARSE_CONTROLS_SPLITFI(CONTROLS);
 	PARSE_CONTROLS_HIERARC(CONTROLS);
@@ -601,6 +604,68 @@ void INPUT::PARSE_CONTROLS_FITENER(JOB_CONTROL & CONTROLS)
 			}	
 		}
 	}
+}
+void INPUT::PARSE_CONTROLS_FITALAM(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("FITALAM", CONTENTS(i)))		
+		{
+			if (CONTENTS(i+1,0)=="True"  || CONTENTS(i+1,0)=="true"  || CONTENTS(i+1,0)=="TRUE")
+			{
+				CONTROLS.USE_ALCH = true;
+			}
+			else
+			{
+				CONTROLS.USE_ALCH = false;
+			}
+			
+		}
+	}
+	if ( RANK == 0 )
+	{
+		cout << "	# FITALAM #: " << bool2str(CONTROLS.USE_ALCH) << endl;	
+	}	
+}
+void INPUT::PARSE_CONTROLS_ALAMORD(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("ALAMORD", CONTENTS(i)))		
+		{
+			CONTROLS.ALCH_2B_ORDER = convert_int(CONTENTS(i+1,0),i+1);
+			CONTROLS.ALCH_3B_ORDER = convert_int(CONTENTS(i+1,1),i+1);
+			CONTROLS.ALCH_4B_ORDER = convert_int(CONTENTS(i+1,2),i+1);
+		}
+	}
+			if ( RANK == 0 )
+			{
+				cout << "	# ALCH_2B_ORDER #: " << CONTROLS.ALCH_2B_ORDER << endl;	
+				cout << "	# ALCH_3B_ORDER #: " << CONTROLS.ALCH_3B_ORDER << endl;	
+				cout << "	# ALCH_4B_ORDER #: " << CONTROLS.ALCH_4B_ORDER << endl;	
+			}	
+}
+void INPUT::PARSE_CONTROLS_ALAMCUT(JOB_CONTROL & CONTROLS)
+{
+	int N_CONTENTS = CONTENTS.size();
+	
+	for (int i=0; i<N_CONTENTS; i++)
+	{
+		if (found_input_keyword("ALAMCUT", CONTENTS(i)))		
+		{
+			CONTROLS.ALCH_MIN = convert_double(CONTENTS(i+1,0),i+1);
+			CONTROLS.ALCH_MAX = convert_double(CONTENTS(i+1,1),i+1);
+		}
+	}
+			if ( RANK == 0 )
+			{
+				cout << "	# ALCH_MIN #: " << CONTROLS.ALCH_MIN << endl;
+				cout << "	# ALCH_MAX #: " << CONTROLS.ALCH_MAX << endl;	
+			}	
 }
 
 void INPUT::PARSE_CONTROLS_PAIRTYP(JOB_CONTROL & CONTROLS)

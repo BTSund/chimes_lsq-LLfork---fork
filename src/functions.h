@@ -198,6 +198,8 @@ public:
 	int		ALCH_2B_ORDER;
 	int		ALCH_3B_ORDER;
 	int		ALCH_4B_ORDER;
+	double 	ALCH_MIN;
+	double 	ALCH_MAX;
 
 	int   NFRAMES;  	      // Number of frames in the movie file
 	int   CHEBY_ORDER;	      // Order of Chebyshev polynomial if used... set to 8 for DFTB Erep polynomial
@@ -265,10 +267,12 @@ public:
 		FIT_ENER_EVER = false ;
 			
 
-		USE_ALCH = true; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
-		ALCH_2B_ORDER = 2; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		USE_ALCH = false; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_2B_ORDER = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
 		ALCH_3B_ORDER = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
 		ALCH_4B_ORDER = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_MIN = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
+		ALCH_MAX = 0; // CHANGE THIS IS SO I CAN START WITHOUT SETTING UP input.C
 			
 
 		// Default is the same as the ChIMES calculator.
