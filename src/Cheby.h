@@ -86,6 +86,8 @@ private:
 	// Evaluate Chebyshev polynomials.
 	void set_polys(int index, double *Tn, double *Tnd, const double rlen, double x_diff, double x_avg, 
 				   int snum, double smin);
+				   
+	void set_polys_alch(double *Tn, double *Tnd, double alch_lambda, double x_diff, double x_avg, int SNUM, double s_minim);
 
 	// Evaluate Chebyshev polynomials when rlen is less than s_minim.
 	void set_polys_out_of_range(int index, double *Tn, double *Tnd, double rlen, double x_diff, double x_avg, int SNUM,

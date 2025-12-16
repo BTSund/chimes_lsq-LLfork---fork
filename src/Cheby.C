@@ -291,6 +291,77 @@ void Cheby::set_polys(int index, double *Tn, double *Tnd, double rlen, double x_
 
 }
 
+void Cheby::set_polys_alch(double *Tn, double *Tnd, double alch_lambda, double x_diff, double x_avg, int SNUM, double s_minim)
+// Sets the value of the Chebyshev polynomials (Tn) and their derivatives (Tnd).  Tnd is the derivative
+// with respect to the interatomic distance, not the transformed distance (x).
+// If rlen < s_minim, then the Chebyshev polynomial Tn is evaluated at s_minim, and Tnd is set to zero.
+// The case rlen > s_maxim is not treated, because it is assumed that the cutoff function will be zero
+// for rlen > s_maxim.
+{
+	double x = 0 ;
+	double exprlen = 0 ;
+
+	// Do the Cheby distance transformation
+
+	transform(
+		alch_lambda, 
+		x_diff, 
+		x_avg, 
+		0.0, 
+		get_trans_type("NONE"), 
+		x,
+		exprlen) ;
+		
+	// Generate Chebyshev polynomials by recursion. 
+	// 
+	// What we're doing here. Want to fit using Cheby polynomials of the 1st kinD[i]. "T_n(x)."
+	// We need to calculate the derivative of these polynomials.
+	// Derivatives are defined through use of Cheby polynomials of the 2nd kind "U_n(x)", as:
+	//
+	// d/dx[ T_n(x) = n * U_n-1(x)] 
+	// 
+	// So we need to first set up the 1st-kind polynomials ("Tn[]")
+	// Then, to compute the derivatives ("Tnd[]"), first set equal to the 2nd-kind, then multiply by n to get the der's
+	 
+	if (SNUM==0){ // if we aren't using lambda this should cause us to not impact normal fits.
+		Tn[0] = 1.0;
+		Tnd[0] = 0.0;
+		cout<<"SNUM==0"<< endl;
+		return;
+	}
+	// First two 1st-kind Chebys:
+	Tn[0] = 1.0;
+	Tn[1] = x;
+	
+	// Start the derivative setup. Set the first two 1st-kind Cheby's equal to the first two of the 2nd-kind
+
+	Tnd[0] = 1.0;
+	Tnd[1] = 2.0 * x;
+	
+	// Use recursion to set up the higher n-value Tn and Tnd's
+
+	for ( int i = 2; i <= SNUM; i++ ) 
+	{
+		Tn[i]  = 2.0 * x *  Tn[i-1] -  Tn[i-2];
+		Tnd[i] = 2.0 * x * Tnd[i-1] - Tnd[i-2];
+	}
+	
+	// Now multiply by n to convert Tnd's to actual derivatives of Tn
+
+	double dx_dr = DERIV_CONST*cheby_var_deriv(x_diff, alch_lambda, 0.0, get_trans_type("NONE"), exprlen);
+
+	for ( int i = SNUM; i >= 1; i-- ) 
+		Tnd[i] = i * dx_dr * Tnd[i-1];
+
+	Tnd[0] = 0.0;
+	for ( int i = 0; i <= SNUM; i++)
+		cout << "Tn: " << Tn[i] << endl;
+	for ( int i = 0; i <= SNUM; i++)
+		cout << "Tnd: " << Tnd[i] << endl;
+
+
+}
+
 void Cheby::set_polys_out_of_range(int index, double *Tn, double *Tnd, double rlen, double x_diff, double x_avg, int SNUM,
 								   double s_minim)
 // Sets the value of the Chebyshev polynomials (Tn) and their derivatives (Tnd) when rlen is < s_minim.
@@ -713,9 +784,11 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 	double rlen;
 	int vstart;
 	static double *Tn, *Tnd;
+	static double *Tn_L, *Tnd_L;
 	static bool called_before = false;
 
 	double fcut; 
+	double alch_lamb; 
 	double fcutderiv; 				
 	double deriv;
 	double tmp_doub; 	
@@ -734,7 +807,27 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 		dim++;
 		Tn   = new double [dim];
 		Tnd  = new double [dim];
+	
+		Tn_L   = new double [CONTROLS.ALCH_2B_ORDER];
+		Tnd_L  = new double [CONTROLS.ALCH_2B_ORDER];
 
+	}
+
+	 // Alch lambda terms are frame wise so do the math out of the loop
+	if (CONTROLS.USE_ALCH){
+		double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
+		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN) ;
+		double SL_MINIM = CONTROLS.ALCH_MIN ;
+		double SL_MAXIM = CONTROLS.ALCH_MAX ;
+		cout << "XL_AVG: " << XL_AVG << endl;
+		cout << "XL_DIFF: " << XL_DIFF << endl;
+		cout << "SL_MINIM: " << SL_MINIM << endl;
+		cout << "SL_MAXIM: " << SL_MAXIM << endl;
+		set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_2B_ORDER, CONTROLS.ALCH_MIN);
+		for ( int i = 0; i <= CONTROLS.ALCH_2B_ORDER; i++)
+			cout << "Tn: " << Tn_L[i] << endl;
+		for ( int i = 0; i <= CONTROLS.ALCH_2B_ORDER; i++)
+			cout << "Tnd: " << Tnd_L[i] << endl;
 	}
 
 	 // Main loop for Chebyshev terms:
