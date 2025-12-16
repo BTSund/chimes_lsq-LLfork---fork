@@ -2775,7 +2775,7 @@ void PAIRS::set_cheby_vals()
 void JOB_CONTROL::LSQ_SETUP(int npairs, int no_atom_types)
 // Setup the JOB_CONTROL structure based on inputs parsed for LSQ calculations.
 {
-		TOT_SHORT_RANGE = TOT_SNUM + NUM_3B_CHEBY + NUM_4B_CHEBY;
+		TOT_SHORT_RANGE = TOT_SNUM*(ALCH_2B_ORDER) + NUM_3B_CHEBY*(ALCH_3B_ORDER) + NUM_4B_CHEBY*(ALCH_4B_ORDER);
 			
 		// Keep track of the total number of lsq parameters.
 		TOT_ALL_PARAMS = TOT_SHORT_RANGE ;
