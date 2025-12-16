@@ -895,7 +895,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 					for ( int j=0; j <= CONTROLS.ALCH_2B_ORDER-1; j++)
 					{
 						// Self-scaling needed for very small cells with self-interactions.  It is 1 for the big cell neighbor list.
-						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1]*Tnd_L[j] + fcutderiv * Tn[i+1]*Tn_L[j] );
+						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1] + fcutderiv * Tn[i+1]*Tn_L[j] );
 
 						// Finally, account for the x, y, and z unit vectors
 						deriv = tmp_doub * RAB.X / rlen;
@@ -931,7 +931,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 
 						if(CONTROLS.FIT_ENER) 
 						{
-							A_MATRIX.FRAME_ENERGIES[vstart+i*CONTROLS.ALCH_2B_ORDER+j]    +=  NEIGHBOR_LIST.PERM_SCALE[2] * fcut * Tn[i+1];
+							A_MATRIX.FRAME_ENERGIES[vstart+i*CONTROLS.ALCH_2B_ORDER+j]    +=  NEIGHBOR_LIST.PERM_SCALE[2] * fcut * Tn[i+1]*Tn_L[j];
 						}
 					}
 				 }
@@ -1245,9 +1245,9 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 										set_3b_powers(PAIR_TRIPLETS[curr_triple_type_index], pair_index, i,
 															pow_ij, pow_ik, pow_jk) ;
 
-										deriv_ij =  fcut_ij * Tnd_ij[pow_ij]*Tnd_L[j] + fcutderiv_ij * Tn_ij[pow_ij]*Tn_L[j] ;
-										deriv_ik =  fcut_ik * Tnd_ik[pow_ik]*Tnd_L[j] + fcutderiv_ik * Tn_ik[pow_ik]*Tn_L[j] ;
-										deriv_jk =  fcut_jk * Tnd_jk[pow_jk]*Tnd_L[j] + fcutderiv_jk * Tn_jk[pow_jk]*Tn_L[j] ;	
+										deriv_ij =  fcut_ij * Tnd_ij[pow_ij]*Tn_L[j] + fcutderiv_ij * Tn_ij[pow_ij]*Tn_L[j] ;
+										deriv_ik =  fcut_ik * Tnd_ik[pow_ik]*Tn_L[j] + fcutderiv_ik * Tn_ik[pow_ik]*Tn_L[j] ;
+										deriv_jk =  fcut_jk * Tnd_jk[pow_jk]*Tn_L[j] + fcutderiv_jk * Tn_jk[pow_jk]*Tn_L[j] ;	
 										
 										force_wo_coeff_ij = perm_scale * (deriv_ij * fcut_ik * fcut_jk * Tn_ik[pow_ik] * Tn_jk[pow_jk]);
 										
@@ -1346,7 +1346,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 										if(CONTROLS.FIT_ENER) 
 										{
-											A_MATRIX.FRAME_ENERGIES[vstart+row_offset] += fcut_ij * fcut_ik * fcut_jk * Tn_ij[pow_ij] * Tn_ik[pow_ik] * Tn_jk[pow_jk] * perm_scale ;
+											A_MATRIX.FRAME_ENERGIES[vstart+row_offset] += fcut_ij * fcut_ik * fcut_jk * Tn_ij[pow_ij] * Tn_ik[pow_ik] * Tn_jk[pow_jk] * Tn_L[j] * perm_scale ;
 										}
 									}
 									}
@@ -1404,6 +1404,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 	static int n_2b_cheby_terms, n_4b_cheby_terms;
 	static double *Tn_ij,  *Tn_ik,  *Tn_il,  *Tn_jk,  *Tn_jl,  *Tn_kl;
 	static double *Tnd_ij, *Tnd_ik, *Tnd_il, *Tnd_jk, *Tnd_jl, *Tnd_kl;
+	static double *Tn_L, *Tnd_L;
 	static bool called_before = false;
 	
 	static vector<int> powers(6);	 // replaces pow_ij, pow_ik, pow_jk;
@@ -1470,7 +1471,21 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 		Tnd_jl  = new double [dim];
 		Tnd_kl  = new double [dim];
 		
+		Tn_L   = new double [CONTROLS.ALCH_4B_ORDER];
+		Tnd_L  = new double [CONTROLS.ALCH_4B_ORDER];
 	}
+
+	// Alch lambda terms are frame wise so do the math out of the loop
+	double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
+	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN) ;
+	double SL_MINIM = CONTROLS.ALCH_MIN ;
+	double SL_MAXIM = CONTROLS.ALCH_MAX ;
+	cout << "XL_AVG: " << XL_AVG << endl;
+	cout << "XL_DIFF: " << XL_DIFF << endl;
+	cout << "SL_MINIM: " << SL_MINIM << endl;
+	cout << "SL_MAXIM: " << SL_MAXIM << endl;
+	set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_4B_ORDER, CONTROLS.ALCH_MIN);
+
 
 	// Set up for layering
 
@@ -1654,7 +1669,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 
 					// Note: This syntax is safe since there is only one possible SNUM_3B_CHEBY value for all interactions
 
-					vstart = n_2b_cheby_terms + n_3b_cheby_terms;
+					vstart = n_2b_cheby_terms*CONTROLS.ALCH_2B_ORDER + n_3b_cheby_terms*CONTROLS.ALCH_3B_ORDER;
 	
 					for (int i=0; i<curr_quad_type_index; i++)
 						vstart += PAIR_QUADRUPLETS[i].N_TRUE_ALLOWED_POWERS;	
@@ -1674,136 +1689,140 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 	
 					for(int i=0; i<PAIR_QUADRUPLETS[curr_quad_type_index].N_ALLOWED_POWERS; i++) 
 					{
-					    	row_offset = PAIR_QUADRUPLETS[curr_quad_type_index].PARAM_INDICES[i];
-						
-						for (int f=0; f<6; f++)	
-							powers[f] = PAIR_QUADRUPLETS[curr_quad_type_index].ALLOWED_POWERS[i][pow_map[f]];
-						
-						deriv[0] = perm_scale * (fcut[0] * Tnd_ij[powers[0]] + fcut_deriv[0] * Tn_ij[powers[0]]) ;
-						deriv[1] = perm_scale * (fcut[1] * Tnd_ik[powers[1]] + fcut_deriv[1] * Tn_ik[powers[1]]) ;
-						deriv[2] = perm_scale * (fcut[2] * Tnd_il[powers[2]] + fcut_deriv[2] * Tn_il[powers[2]]) ;
-						deriv[3] = perm_scale * (fcut[3] * Tnd_jk[powers[3]] + fcut_deriv[3] * Tn_jk[powers[3]]) ;
-						deriv[4] = perm_scale * (fcut[4] * Tnd_jl[powers[4]] + fcut_deriv[4] * Tn_jl[powers[4]]) ;
-						deriv[5] = perm_scale * (fcut[5] * Tnd_kl[powers[5]] + fcut_deriv[5] * Tn_kl[powers[5]]) ;
-
-						force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-						force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-						force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-						force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-						force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]];
-						force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]];
-
-						 // ij pairs
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[0] * RAB[0].X / rlen[0];
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X -= force_wo_coeff[0] * RAB[0].X / rlen[0];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[0] * RAB[0].Y / rlen[0];
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y -= force_wo_coeff[0] * RAB[0].Y / rlen[0];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[0] * RAB[0].Z / rlen[0];
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z -= force_wo_coeff[0] * RAB[0].Z / rlen[0];	
-
-
-						 // ik pairs
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[1] * RAB[1].X / rlen[1];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X -= force_wo_coeff[1] * RAB[1].X / rlen[1];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[1] * RAB[1].Y / rlen[1];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y -= force_wo_coeff[1] * RAB[1].Y / rlen[1];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[1] * RAB[1].Z / rlen[1];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z -= force_wo_coeff[1] * RAB[1].Z / rlen[1];
-						
-						 // il pairs
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[2] * RAB[2].X / rlen[2];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[2] * RAB[2].X / rlen[2];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[2] * RAB[2].Y / rlen[2];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[2] * RAB[2].Y / rlen[2];
-
-						 A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[2] * RAB[2].Z / rlen[2];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[2] * RAB[2].Z / rlen[2];
-
-						 // jk pairs
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X += force_wo_coeff[3] * RAB[3].X / rlen[3];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X -= force_wo_coeff[3] * RAB[3].X / rlen[3];
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y += force_wo_coeff[3] * RAB[3].Y / rlen[3];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y -= force_wo_coeff[3] * RAB[3].Y / rlen[3];
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z += force_wo_coeff[3] * RAB[3].Z / rlen[3];
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z -= force_wo_coeff[3] * RAB[3].Z / rlen[3];
-						
-						 // jl pairs
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X += force_wo_coeff[4] * RAB[4].X / rlen[4];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[4] * RAB[4].X / rlen[4];
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y += force_wo_coeff[4] * RAB[4].Y / rlen[4];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[4] * RAB[4].Y / rlen[4];
-
-						 A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z += force_wo_coeff[4] * RAB[4].Z / rlen[4];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[4] * RAB[4].Z / rlen[4];
-						
-						 // kl pairs
-
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X += force_wo_coeff[5] * RAB[5].X / rlen[5];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[5] * RAB[5].X / rlen[5];
-
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y += force_wo_coeff[5] * RAB[5].Y / rlen[5];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[5] * RAB[5].Y / rlen[5];
-
-						 A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z += force_wo_coeff[5] * RAB[5].Z / rlen[5];
-						 A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[5] * RAB[5].Z / rlen[5];
-
-						if (CONTROLS.FIT_STRESS)
-						{
-							for (int f=0; f<6; f++)
+						for ( int j=0; j <= CONTROLS.ALCH_4B_ORDER-1; j++)
 							{
-								A_MATRIX.STRESSES[vstart+row_offset].XX -= force_wo_coeff[f] * RAB[f].X * RAB[f].X / rlen[f];
-							    	A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
-								A_MATRIX.STRESSES[vstart+row_offset].ZZ -= force_wo_coeff[f] * RAB[f].Z * RAB[f].Z / rlen[f];								     
-							}								
-						}
-						
-						else if (CONTROLS.FIT_STRESS_ALL)
-						{
-							for (int f=0; f<6; f++)
-							{
-								A_MATRIX.STRESSES[vstart+row_offset].XX -= force_wo_coeff[f] * RAB[f].X * RAB[f].X / rlen[f];
-							    	A_MATRIX.STRESSES[vstart+row_offset].XY -= force_wo_coeff[f] * RAB[f].X * RAB[f].Y / rlen[f];
-								A_MATRIX.STRESSES[vstart+row_offset].XZ -= force_wo_coeff[f] * RAB[f].X * RAB[f].Z / rlen[f];	   
-							
-							    	A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
-								A_MATRIX.STRESSES[vstart+row_offset].YZ -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Z / rlen[f];	   
-								A_MATRIX.STRESSES[vstart+row_offset].ZZ -= force_wo_coeff[f] * RAB[f].Z * RAB[f].Z / rlen[f];
-							}	
-						}
-						
-						TMP_ENER  = fcut[0] 
-						          * fcut[1] 
-							  * fcut[2] 
-							  * fcut[3] 
-							  * fcut[4] 
-							  * fcut[5];
 
-						TMP_ENER *= perm_scale ;
-							  
-						TMP_ENER *=  Tn_ij[powers[0]] 
-						           * Tn_ik[powers[1]] 
-							   * Tn_il[powers[2]] 
-							   * Tn_jk[powers[3]] 
-							   * Tn_jl[powers[4]] 
-							   * Tn_kl[powers[5]];
-						
-						if(CONTROLS.FIT_ENER) 
-						{
-							A_MATRIX.FRAME_ENERGIES[vstart+row_offset]    += TMP_ENER;
-						}
+								row_offset = PAIR_QUADRUPLETS[curr_quad_type_index].PARAM_INDICES[i]*CONTROLS.ALCH_4B_ORDER+j;
+								for (int f=0; f<6; f++)	
+									powers[f] = PAIR_QUADRUPLETS[curr_quad_type_index].ALLOWED_POWERS[i][pow_map[f]];
+								
+								deriv[0] = perm_scale * (fcut[0] * Tnd_ij[powers[0]] * Tn_L[j] + fcut_deriv[0] * Tn_ij[powers[0]]*Tn_L[j]) ;
+								deriv[1] = perm_scale * (fcut[1] * Tnd_ik[powers[1]] * Tn_L[j] + fcut_deriv[1] * Tn_ik[powers[1]]*Tn_L[j]) ;
+								deriv[2] = perm_scale * (fcut[2] * Tnd_il[powers[2]] * Tn_L[j] + fcut_deriv[2] * Tn_il[powers[2]]*Tn_L[j]) ;
+								deriv[3] = perm_scale * (fcut[3] * Tnd_jk[powers[3]] * Tn_L[j] + fcut_deriv[3] * Tn_jk[powers[3]]*Tn_L[j]) ;
+								deriv[4] = perm_scale * (fcut[4] * Tnd_jl[powers[4]] * Tn_L[j] + fcut_deriv[4] * Tn_jl[powers[4]]*Tn_L[j]) ;
+								deriv[5] = perm_scale * (fcut[5] * Tnd_kl[powers[5]] * Tn_L[j] + fcut_deriv[5] * Tn_kl[powers[5]]*Tn_L[j]) ;
+
+								force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
+								force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
+								force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
+								force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
+								force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]];
+								force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]];
+
+								// ij pairs
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[0] * RAB[0].X / rlen[0];
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X -= force_wo_coeff[0] * RAB[0].X / rlen[0];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[0] * RAB[0].Y / rlen[0];
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y -= force_wo_coeff[0] * RAB[0].Y / rlen[0];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[0] * RAB[0].Z / rlen[0];
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z -= force_wo_coeff[0] * RAB[0].Z / rlen[0];	
+
+
+								// ik pairs
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[1] * RAB[1].X / rlen[1];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X -= force_wo_coeff[1] * RAB[1].X / rlen[1];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[1] * RAB[1].Y / rlen[1];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y -= force_wo_coeff[1] * RAB[1].Y / rlen[1];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[1] * RAB[1].Z / rlen[1];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z -= force_wo_coeff[1] * RAB[1].Z / rlen[1];
+								
+								// il pairs
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].X += force_wo_coeff[2] * RAB[2].X / rlen[2];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[2] * RAB[2].X / rlen[2];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Y += force_wo_coeff[2] * RAB[2].Y / rlen[2];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[2] * RAB[2].Y / rlen[2];
+
+								A_MATRIX.FORCES[a1     ][vstart+row_offset].Z += force_wo_coeff[2] * RAB[2].Z / rlen[2];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[2] * RAB[2].Z / rlen[2];
+
+								// jk pairs
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X += force_wo_coeff[3] * RAB[3].X / rlen[3];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X -= force_wo_coeff[3] * RAB[3].X / rlen[3];
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y += force_wo_coeff[3] * RAB[3].Y / rlen[3];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y -= force_wo_coeff[3] * RAB[3].Y / rlen[3];
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z += force_wo_coeff[3] * RAB[3].Z / rlen[3];
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z -= force_wo_coeff[3] * RAB[3].Z / rlen[3];
+								
+								// jl pairs
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].X += force_wo_coeff[4] * RAB[4].X / rlen[4];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[4] * RAB[4].X / rlen[4];
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Y += force_wo_coeff[4] * RAB[4].Y / rlen[4];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[4] * RAB[4].Y / rlen[4];
+
+								A_MATRIX.FORCES[fidx_a2][vstart+row_offset].Z += force_wo_coeff[4] * RAB[4].Z / rlen[4];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[4] * RAB[4].Z / rlen[4];
+								
+								// kl pairs
+
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].X += force_wo_coeff[5] * RAB[5].X / rlen[5];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].X -= force_wo_coeff[5] * RAB[5].X / rlen[5];
+
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Y += force_wo_coeff[5] * RAB[5].Y / rlen[5];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Y -= force_wo_coeff[5] * RAB[5].Y / rlen[5];
+
+								A_MATRIX.FORCES[fidx_a3][vstart+row_offset].Z += force_wo_coeff[5] * RAB[5].Z / rlen[5];
+								A_MATRIX.FORCES[fidx_a4][vstart+row_offset].Z -= force_wo_coeff[5] * RAB[5].Z / rlen[5];
+
+								if (CONTROLS.FIT_STRESS)
+								{
+									for (int f=0; f<6; f++)
+									{
+										A_MATRIX.STRESSES[vstart+row_offset].XX -= force_wo_coeff[f] * RAB[f].X * RAB[f].X / rlen[f];
+											A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
+										A_MATRIX.STRESSES[vstart+row_offset].ZZ -= force_wo_coeff[f] * RAB[f].Z * RAB[f].Z / rlen[f];								     
+									}								
+								}
+								
+								else if (CONTROLS.FIT_STRESS_ALL)
+								{
+									for (int f=0; f<6; f++)
+									{
+										A_MATRIX.STRESSES[vstart+row_offset].XX -= force_wo_coeff[f] * RAB[f].X * RAB[f].X / rlen[f];
+											A_MATRIX.STRESSES[vstart+row_offset].XY -= force_wo_coeff[f] * RAB[f].X * RAB[f].Y / rlen[f];
+										A_MATRIX.STRESSES[vstart+row_offset].XZ -= force_wo_coeff[f] * RAB[f].X * RAB[f].Z / rlen[f];	   
+									
+											A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
+										A_MATRIX.STRESSES[vstart+row_offset].YZ -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Z / rlen[f];	   
+										A_MATRIX.STRESSES[vstart+row_offset].ZZ -= force_wo_coeff[f] * RAB[f].Z * RAB[f].Z / rlen[f];
+									}	
+								}
+								
+								TMP_ENER  = fcut[0] 
+										* fcut[1] 
+									* fcut[2] 
+									* fcut[3] 
+									* fcut[4] 
+									* fcut[5];
+
+								TMP_ENER *= perm_scale ;
+									
+								TMP_ENER *=  Tn_ij[powers[0]] 
+										* Tn_ik[powers[1]] 
+									* Tn_il[powers[2]] 
+									* Tn_jk[powers[3]] 
+									* Tn_jl[powers[4]] 
+									* Tn_kl[powers[5]]
+									* Tn_L[j];
+								
+								if(CONTROLS.FIT_ENER) 
+								{
+									A_MATRIX.FRAME_ENERGIES[vstart+row_offset]    += TMP_ENER;
+								}
+							}
 					}
 				}	// End loop over 4th atom							
 			}	// End loop over 3rd atom
