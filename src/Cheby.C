@@ -1209,7 +1209,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 							// Note: This syntax is safe since there is only one possible SNUM_3B_CHEBY value for all interactions
 
-							vstart = n_2b_cheby_terms;
+							vstart = n_2b_cheby_terms*CONTROLS.ALCH_2B_ORDER;
 			
 							for (int i=0; i<curr_triple_type_index; i++)
 								vstart += PAIR_TRIPLETS[i].N_TRUE_ALLOWED_POWERS;						
@@ -1241,7 +1241,6 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 								for ( int j=0; j <= CONTROLS.ALCH_3B_ORDER-1; j++)
 									{
 										row_offset = PAIR_TRIPLETS[curr_triple_type_index].PARAM_INDICES[i]*CONTROLS.ALCH_3B_ORDER+j;
-						 				cout << "index: " << vstart+row_offset << endl;
 										
 										set_3b_powers(PAIR_TRIPLETS[curr_triple_type_index], pair_index, i,
 															pow_ij, pow_ik, pow_jk) ;
