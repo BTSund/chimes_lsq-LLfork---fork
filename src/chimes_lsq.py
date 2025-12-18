@@ -441,6 +441,16 @@ def main():
             if (BREAK_COND):
                  break
 
+        if "USE_ALCH" in hf[i]:
+            line = hf[i].split()
+            if (len(line) == 8) and (line[1] == "true"):
+                alch_min = int(line[2])
+                alch_max = int(line[3])
+                alch_1b = int(line[4])
+                alch_2b = int(line[5])
+                alch_3b = int(line[6])
+                alch_4b = int(line[7])
+
     # 1. Figure out what potential type we have
 
     POTENTIAL = hf[7].split()
@@ -472,7 +482,7 @@ def main():
     FIT_COUL = hf[1].split()
     FIT_COUL = FIT_COUL[1]
 
-    ATOM_TYPES_LINE  = 9
+    ATOM_TYPES_LINE  = 11
     TOTAL_ATOM_TYPES = hf[ATOM_TYPES_LINE].split()
     TOTAL_ATOM_TYPES = int(TOTAL_ATOM_TYPES[2])
     ATOM_PAIRS_LINE  = ATOM_TYPES_LINE+2+TOTAL_ATOM_TYPES+2
@@ -550,7 +560,8 @@ def main():
                 print ("%3d %21.13e" % (j,0.0))	
         else:
             for j in range(0, int(SNUM_2B)):
-                print ("%3d %21.13e" % (j,x[effective_pair*SNUM_2B+j]))
+                for k in range(0, alch_2b):
+                    print ("%3d %3d %21.13e" % (j,k,x[effective_pair*SNUM_2B+j*alch_2b+k]))
             effective_pair += 1    
 
         if FIT_COUL == "true":
@@ -568,7 +579,7 @@ def main():
     ADD_PARAM = 0
 
     COUNTED_TRIP_PARAMS = 0
-
+    print(x)
     if (int(TOTAL_TRIPS) > 0):
         print ("TRIPLET " + POTENTIAL + " PARAMS \n")
 
@@ -610,11 +621,11 @@ def main():
                     LINE       = hf[ATOM_TRIPS_LINE+2+ADD_LINES].rstrip('\n')
                     LINE_SPLIT = LINE.split()
 
-                    print ("%s %21.13e" % (LINE, x[effective_pair*SNUM_2B + TRIP_PAR_IDX+int(LINE_SPLIT[5])]))
+                    print ("%s %21.13e" % (LINE, x[effective_pair*SNUM_2B*alch_2b + TRIP_PAR_IDX+int(LINE_SPLIT[6])]))
 
                 TRIP_PAR_IDX += int(UNIQ)
                 COUNTED_TRIP_PARAMS += int(UNIQ)
-                #print "COUNTED_TRIP_PARAMS", COUNTED_TRIP_PARAMS
+                #print("COUNTED_TRIP_PARAMS", COUNTED_TRIP_PARAMS)
 
             print ("")
 
@@ -677,10 +688,10 @@ def main():
                     LINE       = hf[ATOM_QUADS_LINE+2+ADD_LINES].rstrip('\n')
                     LINE_SPLIT = LINE.split()
 
-                    UNIQ_QUAD_IDX = int(LINE_SPLIT[8])
+                    UNIQ_QUAD_IDX = int(LINE_SPLIT[9])
                     #print 'UNIQ_QUAD_IDX', str(UNIQ_QUAD_IDX)
 
-                    print ("%s %21.13e" % (LINE,x[effective_pair*SNUM_2B + COUNTED_TRIP_PARAMS + QUAD_PAR_IDX + UNIQ_QUAD_IDX]))
+                    print ("%s %21.13e" % (LINE,x[effective_pair*SNUM_2B*alch_2b + COUNTED_TRIP_PARAMS + QUAD_PAR_IDX + UNIQ_QUAD_IDX]))
 
                 QUAD_PAR_IDX += int(UNIQ)
                 COUNTED_QUAD_PARAMS += int(UNIQ)

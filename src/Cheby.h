@@ -27,6 +27,8 @@ public:
 	double DERIV_CONST;
 
 	// Derivatives of the force with respect to the coefficients - 2 BODY
+	void Deriv_1B(A_MAT & FRAME_A_MATRIX);
+
 	void Deriv_2B(A_MAT & FRAME_A_MATRIX);
 
 	// Derivatives of the force with respect to the coefficients - 3 BODY

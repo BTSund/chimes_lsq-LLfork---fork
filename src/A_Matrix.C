@@ -250,7 +250,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 			for(int i=0; i<CHARGES.size(); i++) // Loop over pair types, i.e. OO, OH, HH
 				fileA << CHARGES[i][a].X << "   ";
 
-		add_col_of_ones("FORCE", DO_ENER, fileA);
+		// // add_col_of_ones("FORCE", DO_ENER, fileA);
 		write_natoms(filena);			  
 
 		fileA << endl;	
@@ -268,7 +268,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 		if ( CONTROLS.FIT_COUL ) 
 			for(int i=0; i<CHARGES.size(); i++) // Loop over pair types, i.e. OO, OH, HH
 				fileA << CHARGES[i][a].Y << "   ";
-		add_col_of_ones("FORCE", DO_ENER, fileA);
+		// // add_col_of_ones("FORCE", DO_ENER, fileA);
 		write_natoms(filena);				  
 		fileA << endl;	
 
@@ -286,7 +286,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 		if ( CONTROLS.FIT_COUL ) 
 			for(int i=0; i<CHARGES.size(); i++) // Loop over pair types, i.e. OO, OH, HH
 				fileA << CHARGES[i][a].Z << "   ";
-		add_col_of_ones("FORCE", DO_ENER, fileA);
+		// add_col_of_ones("FORCE", DO_ENER, fileA);
 		write_natoms(filena);				  
 		fileA << endl;		
 			
@@ -322,7 +322,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].XX << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);
 		fileA << endl;	
 			
@@ -333,7 +333,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].YY << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);	
+		// add_col_of_ones("STRESS", DO_ENER, fileA);	
 		write_natoms(filena);
 		fileA << endl;
 			
@@ -344,7 +344,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].ZZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);
 		fileA << endl;	
 			
@@ -376,7 +376,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].XX << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;
 			
@@ -387,7 +387,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].XY << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;
 		
@@ -398,7 +398,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].XZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;	
 			
@@ -409,7 +409,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].XY << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;	
 			
@@ -420,7 +420,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].YY << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;	
 			
@@ -431,7 +431,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].YZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;
 			
@@ -442,7 +442,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].XZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);
 		fileA << endl;
 						
@@ -453,7 +453,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;
 			fileA << STRESSES[n].YZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;
 		
@@ -464,7 +464,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << STRESSES[n].ZZ << " ";
 		}
-		add_col_of_ones("STRESS", DO_ENER, fileA);
+		// add_col_of_ones("STRESS", DO_ENER, fileA);
 		write_natoms(filena);	
 		fileA << endl;		
 
@@ -512,7 +512,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << FRAME_ENERGIES[n] << " ";
 		}
-		add_col_of_ones("ENERGY", DO_ENER, fileA);	
+		// add_col_of_ones("ENERGY", DO_ENER, fileA);	
 		write_natoms(filena);			
 		fileA << endl;
 			
@@ -523,7 +523,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << FRAME_ENERGIES[n] << " ";
 		}
-		add_col_of_ones("ENERGY", DO_ENER, fileA);				
+		// add_col_of_ones("ENERGY", DO_ENER, fileA);				
 		write_natoms(filena);
 		fileA << endl;
 			
@@ -534,7 +534,7 @@ void A_MAT::PRINT_FRAME(	const struct JOB_CONTROL &CONTROLS,
 					continue;		
 			fileA << FRAME_ENERGIES[n] << " ";
 		}
-		add_col_of_ones("ENERGY", DO_ENER, fileA);				
+		// add_col_of_ones("ENERGY", DO_ENER, fileA);				
 		write_natoms(filena);
 		fileA << endl;						
 			

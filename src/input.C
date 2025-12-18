@@ -637,13 +637,15 @@ void INPUT::PARSE_CONTROLS_ALAMORD(JOB_CONTROL & CONTROLS)
 	{
 		if (found_input_keyword("ALAMORD", CONTENTS(i)))		
 		{
-			CONTROLS.ALCH_2B_ORDER = convert_int(CONTENTS(i+1,0),i+1);
-			CONTROLS.ALCH_3B_ORDER = convert_int(CONTENTS(i+1,1),i+1);
-			CONTROLS.ALCH_4B_ORDER = convert_int(CONTENTS(i+1,2),i+1);
+			CONTROLS.ALCH_1B_ORDER = convert_int(CONTENTS(i+1,0),i+1);
+			CONTROLS.ALCH_2B_ORDER = convert_int(CONTENTS(i+1,1),i+1);
+			CONTROLS.ALCH_3B_ORDER = convert_int(CONTENTS(i+1,2),i+1);
+			CONTROLS.ALCH_4B_ORDER = convert_int(CONTENTS(i+1,3),i+1);
 		}
 	}
 			if ( RANK == 0 )
 			{
+				cout << "	# ALCH_1B_ORDER #: " << CONTROLS.ALCH_1B_ORDER << endl;	
 				cout << "	# ALCH_2B_ORDER #: " << CONTROLS.ALCH_2B_ORDER << endl;	
 				cout << "	# ALCH_3B_ORDER #: " << CONTROLS.ALCH_3B_ORDER << endl;	
 				cout << "	# ALCH_4B_ORDER #: " << CONTROLS.ALCH_4B_ORDER << endl;	

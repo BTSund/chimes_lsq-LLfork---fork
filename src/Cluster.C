@@ -465,7 +465,7 @@ void CLUSTER::print_special(ofstream &header, string MAP_REVERSE, string output_
 	 
 }
 
-void CLUSTER::print_header(ofstream &header)
+void CLUSTER::print_header(ofstream &header, int alch_order)
 // Print the header file for the force field definition
 {
   header << " INDEX: " << INDX << " ATOMS: ";
@@ -489,19 +489,21 @@ void CLUSTER::print_header(ofstream &header)
   } 
   else 
   {
-	 header << "  " << N_TRUE_ALLOWED_POWERS << " parameters, " << N_ALLOWED_POWERS << " total parameters "<< endl;	
-	 header << "     index  |  powers  |  equiv index  |  param index  " << endl;
-	 header << "   ----------------------------------------------------" << endl;	
+	 header << "  " << N_TRUE_ALLOWED_POWERS * alch_order << " parameters, " << N_ALLOWED_POWERS*alch_order << " total parameters "<< endl;	
+	 header << "     index  | alch |  powers  |  equiv index  |  param index  " << endl;
+	 header << "   -------------------------------------------------------------" << endl;	
 
 	 for(int j=0; j<ALLOWED_POWERS.size(); j++)
 	 {
-		header << "      " << setw(6) << fixed << left << j << " ";
-		header << " ";
-		for(int m=0; m<NPAIRS; m++)
-		  header << setw(2) << fixed << left << ALLOWED_POWERS[j][m] << " ";
-		header << "       " << setw(8) << EQUIV_INDICES[j] << " ";
-		header << "       " << setw(8) << PARAM_INDICES[j] << endl; 
-		
+		for (int i=0; i< alch_order; i++)
+		{
+			header << "      " << setw(6) << fixed << left << j*alch_order+i << "";
+			header << "" << i << "    ";
+			for(int m=0; m<NPAIRS; m++)
+			header << setw(2) << fixed << left << ALLOWED_POWERS[j][m] << " ";
+			header << "       " << setw(8) << EQUIV_INDICES[j]*alch_order << " ";
+			header << "       " << setw(8) << PARAM_INDICES[j]*alch_order+i << endl; 
+		}
 	 }
   }
   header << endl;
@@ -1633,7 +1635,7 @@ void CLUSTER_LIST::print_min_distances()
 }
 
 
-void CLUSTER_LIST::print_header(ofstream &header, int natoms, int cheby_order)
+void CLUSTER_LIST::print_header(ofstream &header, int natoms, int cheby_order, int alch_order)
 // print the force field file header for the cluster list.
 // The number of atoms in the cluster is specified in case the
 // cluster is not initialized (used).
@@ -1649,7 +1651,7 @@ void CLUSTER_LIST::print_header(ofstream &header, int natoms, int cheby_order)
 	 header << VEC.size() << endl << endl;
 	 for(int i=0;i < VEC.size(); i++)
 	 {
-		VEC[i].print_header(header);
+		VEC[i].print_header(header, alch_order);
 	 }	 
   }
 }

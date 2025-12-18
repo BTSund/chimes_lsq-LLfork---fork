@@ -780,7 +780,7 @@ void ZCalc_Deriv (JOB_CONTROL & CONTROLS, vector<PAIRS> & FF_2BODY,  CLUSTER_LIS
 		// i.e. PAIRTYP: CHEBYSHEV  0 6 or similar
 
 	  Cheby cheby{CONTROLS,FRAME_SYSTEM,NEIGHBOR_LIST,FF_2BODY,INT_PAIR_MAP} ;
-
+	  cheby.Deriv_1B(A_MATRIX) ;
 	  if ( FF_2BODY[0].SNUM > 0)
 		 cheby.Deriv_2B(A_MATRIX) ;
 	

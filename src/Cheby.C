@@ -326,7 +326,6 @@ void Cheby::set_polys_alch(double *Tn, double *Tnd, double alch_lambda, double x
 	if (SNUM==1){ // if we aren't using lambda this should cause us to not impact normal fits.
 		Tn[0] = 1.0;
 		Tnd[0] = 1.0;
-		cout<<"SNUM==1"<< endl;
 		return;
 	}
 	// First two 1st-kind Chebys:
@@ -353,11 +352,9 @@ void Cheby::set_polys_alch(double *Tn, double *Tnd, double alch_lambda, double x
 	for ( int i = SNUM; i >= 1; i-- ) 
 		Tnd[i] = i * dx_dr * Tnd[i-1];
 
-	// Tnd[0] = 0.0;
+	Tnd[0] = 0.0;
 	for ( int i = 0; i <= SNUM; i++)
 		cout << "Tn: " << Tn[i] << endl;
-	for ( int i = 0; i <= SNUM; i++)
-		cout << "Tnd: " << Tnd[i] << endl;
 
 
 }
@@ -777,6 +774,57 @@ void Cheby::map_indices_int(CLUSTER & cluster, vector<int> & atom_type_idx, vect
 #endif
 }
 
+void Cheby::Deriv_1B(A_MAT & A_MATRIX)
+ // Calculate derivatives of the forces wrt the Chebyshev parameters. Stores minimum distance between a pair of atoms in minD[i].
+{
+	int vstart;
+	static double *Tn_L, *Tnd_L;
+	static bool called_before = false;
+	double alch_lamb; 				
+	double deriv;
+	double tmp_doub; 	
+
+	if ( ! called_before ) 
+	{
+		called_before = true;
+	
+		Tn_L   = new double [CONTROLS.ALCH_1B_ORDER];
+		Tnd_L  = new double [CONTROLS.ALCH_1B_ORDER];
+
+	}
+
+	 // Alch lambda terms are frame wise so do the math out of the loop
+		double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
+		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
+		double SL_MINIM = CONTROLS.ALCH_MIN ;
+		double SL_MAXIM = CONTROLS.ALCH_MAX ;
+		cout << "XL_AVG: " << XL_AVG << endl;
+		cout << "XL_DIFF: " << XL_DIFF << endl;
+		cout << "SL_MINIM: " << SL_MINIM << endl;
+		cout << "SL_MAXIM: " << SL_MAXIM << endl;
+		set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_1B_ORDER, CONTROLS.ALCH_MIN);
+
+	 // Main loop for Chebyshev terms:
+
+	 string TEMP_STR;
+	 int curr_pair_type_idx;
+
+	 // Set up for layering
+
+	int row_offset = CONTROLS.TOT_SNUM*(CONTROLS.ALCH_2B_ORDER) + CONTROLS.NUM_3B_CHEBY*(CONTROLS.ALCH_3B_ORDER) + CONTROLS.NUM_4B_CHEBY*(CONTROLS.ALCH_4B_ORDER);
+
+
+		for(int i=0; i<A_MATRIX.NO_ATOM_TYPES; i++)
+		{
+			for( int j=0; j < CONTROLS.ALCH_1B_ORDER; j++)
+			A_MATRIX.FRAME_ENERGIES[row_offset+i*CONTROLS.ALCH_1B_ORDER+j]    +=  Tn_L[j]*A_MATRIX.NO_ATOMS_OF_TYPE[i];
+		}		
+		
+
+
+  return;
+}
+
 void Cheby::Deriv_2B(A_MAT & A_MATRIX)
  // Calculate derivatives of the forces wrt the Chebyshev parameters. Stores minimum distance between a pair of atoms in minD[i].
 {
@@ -815,7 +863,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 
 	 // Alch lambda terms are frame wise so do the math out of the loop
 		double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
-		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN) ;
+		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 		double SL_MINIM = CONTROLS.ALCH_MIN ;
 		double SL_MAXIM = CONTROLS.ALCH_MAX ;
 		cout << "XL_AVG: " << XL_AVG << endl;
@@ -892,10 +940,10 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 				 fidx_a2 = SYSTEM.PARENT[a2];
 				 for ( int i=0; i<FF_2BODY[curr_pair_type_idx].SNUM; i++ ) 
 				 {
-					for ( int j=0; j <= CONTROLS.ALCH_2B_ORDER-1; j++)
+					for ( int j=0; j < CONTROLS.ALCH_2B_ORDER; j++)
 					{
 						// Self-scaling needed for very small cells with self-interactions.  It is 1 for the big cell neighbor list.
-						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1] + fcutderiv * Tn[i+1]*Tn_L[j] );
+						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1]*Tn_L[j] + fcutderiv * Tn[i+1]*Tn_L[j] );
 
 						// Finally, account for the x, y, and z unit vectors
 						deriv = tmp_doub * RAB.X / rlen;
@@ -1054,7 +1102,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 	 // Alch lambda terms are frame wise so do the math out of the loop
 	double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
-	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN) ;
+	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 	double SL_MINIM = CONTROLS.ALCH_MIN ;
 	double SL_MAXIM = CONTROLS.ALCH_MAX ;
 	cout << "XL_AVG: " << XL_AVG << endl;
@@ -1477,7 +1525,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 
 	// Alch lambda terms are frame wise so do the math out of the loop
 	double XL_AVG = (CONTROLS.ALCH_MIN + CONTROLS.ALCH_MAX)/2.0 ;
-	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN) ;
+	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 	double SL_MINIM = CONTROLS.ALCH_MIN ;
 	double SL_MAXIM = CONTROLS.ALCH_MAX ;
 	cout << "XL_AVG: " << XL_AVG << endl;

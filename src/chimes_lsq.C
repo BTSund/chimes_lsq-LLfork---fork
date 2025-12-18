@@ -616,6 +616,15 @@ static void print_param_header(JOB_CONTROL &CONTROLS, vector<PAIRS> &ATOM_PAIRS,
 	else
 		header << endl;
 	
+	if(CONTROLS.USE_ALCH)
+	{
+		header << endl << "USE_ALCH: true" << " ";
+		header << CONTROLS.ALCH_MIN << " " << CONTROLS.ALCH_MAX<<  " ";
+		header << CONTROLS.ALCH_1B_ORDER<< " " << CONTROLS.ALCH_2B_ORDER<< " " << CONTROLS.ALCH_3B_ORDER<< " " << CONTROLS.ALCH_4B_ORDER<< " " <<  endl;
+	}
+	else
+		header << endl  << "USE_ALCH: false" << endl;	
+
 	header << endl << "ATOM TYPES: " << CONTROLS.NATMTYP << endl << endl;
 	header << "# TYPEIDX #	# ATM_TYP #	# ATMCHRG #	# ATMMASS #" << endl;
 	
@@ -671,8 +680,8 @@ static void print_param_header(JOB_CONTROL &CONTROLS, vector<PAIRS> &ATOM_PAIRS,
 	 
 
 	// Print out cluster parameters into the header.
-	TRIPS.print_header(header,3,CONTROLS.CHEBY_3B_ORDER);
-	QUADS.print_header(header,4,CONTROLS.CHEBY_4B_ORDER);
+	TRIPS.print_header(header,3,CONTROLS.CHEBY_3B_ORDER, CONTROLS.ALCH_3B_ORDER);
+	QUADS.print_header(header,4,CONTROLS.CHEBY_4B_ORDER, CONTROLS.ALCH_4B_ORDER);
 
 	header << endl;
 	header.close();

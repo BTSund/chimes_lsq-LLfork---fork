@@ -148,7 +148,7 @@ public:
   void print(bool md_mode) const;				// Print parameters for the cluster.  If md_mode is true, print the potential parameters.
 
   void print_special (ofstream &header, string QUAD_MAP_REVERSE, string output_mode);	// Print special parameters to the header file.
-  void print_header  (ofstream &header);					// Print the params file header for a cluster
+  void print_header  (ofstream &header, int alch_order);					// Print the params file header for a cluster
   void read_ff_params(ifstream &paramfile, const vector<string> &atomtype);	// Read the force field parameters for a cluster.
 
   CLUSTER() {} 
@@ -243,7 +243,7 @@ public:
   void print_min_distances();
 
   // print the force field file header for the cluster list.
-  void print_header(ofstream &header, int natoms, int cheby_order);
+  void print_header(ofstream &header, int natoms, int cheby_order, int alch_order);
 
   // Print the cutoff function parameters controlling the CLUSTER_LIST.
   void print_fcut();
