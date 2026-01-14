@@ -296,7 +296,7 @@ void NEIGHBORS::DO_UPDATE_BIG(FRAME & SYSTEM, JOB_CONTROL & CONTROLS)
 		if ( ibin >= TOTAL_BINS ) 
 		{
 			cout << "Error: binning BIN_IDX out of range\n";
-			cout << "BIN_IDX.X = " << BIN_IDX.X << "BIN_IDX.Y = " << BIN_IDX.Y << "BIN_IDX.Z = " << BIN_IDX.Z << endl;
+			cout << "BIN_IDX.X = " << BIN_IDX.X << " BIN_IDX.Y = " << BIN_IDX.Y << " BIN_IDX.Z = " << BIN_IDX.Z << endl;
 			exit(1);
 		}
 		
@@ -327,7 +327,7 @@ void NEIGHBORS::DO_UPDATE_BIG(FRAME & SYSTEM, JOB_CONTROL & CONTROLS)
 		if ( BIN_IDX_a1.X < 1 || BIN_IDX_a1.Y < 1 || BIN_IDX_a1.Z < 1 ) 
 		{
 			cout << "Error: bad binning BIN_IDX\n";
-			cout << "BIN_IDX.X = " << BIN_IDX_a1.X << "BIN_IDX.Y = " << BIN_IDX_a1.Y << "BIN_IDX.Z = " << BIN_IDX_a1.Z << endl;
+			cout << "BIN_IDX.X = " << BIN_IDX_a1.X << " BIN_IDX.Y = " << BIN_IDX_a1.Y << " BIN_IDX.Z = " << BIN_IDX_a1.Z << endl;
 			exit(1);
 		}
 
@@ -2538,9 +2538,9 @@ void FRAME::READ_XYZF(ifstream &TRAJ_INPUT, const JOB_CONTROL &CONTROLS, const v
 			ALCH_LAMBDA = stod(tokens[tokens.size()-1]);
 		}
 	}
-	if(CONTROLS.USE_ALCH){
-		cout << "ClassDefs.C Lambda Line 2542: " << ALCH_LAMBDA << endl;
-	}
+	// if(CONTROLS.USE_ALCH){
+	// 	cout << "ClassDefs.C Lambda Line 2542: " << ALCH_LAMBDA << endl;
+	// }
 
 	
 	// Check that outer cutoffs do not exceed half of the boxlength

@@ -351,10 +351,10 @@ void Cheby::set_polys_alch(double *Tn, double *Tnd, double alch_lambda, double x
 
 	for ( int i = SNUM; i >= 1; i-- ) 
 		Tnd[i] = i * dx_dr * Tnd[i-1];
-
+ 
 	Tnd[0] = 0.0;
-	for ( int i = 0; i <= SNUM; i++)
-		cout << "Tn: " << Tn[i] << endl;
+	// for ( int i = 0; i <= SNUM; i++)
+	// 	cout << "Tn: " << Tn[i] << endl;
 
 
 }
@@ -788,8 +788,8 @@ void Cheby::Deriv_1B(A_MAT & A_MATRIX)
 	{
 		called_before = true;
 	
-		Tn_L   = new double [CONTROLS.ALCH_1B_ORDER];
-		Tnd_L  = new double [CONTROLS.ALCH_1B_ORDER];
+		Tn_L   = new double [CONTROLS.ALCH_1B_ORDER+1];
+		Tnd_L  = new double [CONTROLS.ALCH_1B_ORDER+1];
 
 	}
 
@@ -798,10 +798,10 @@ void Cheby::Deriv_1B(A_MAT & A_MATRIX)
 		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 		double SL_MINIM = CONTROLS.ALCH_MIN ;
 		double SL_MAXIM = CONTROLS.ALCH_MAX ;
-		cout << "XL_AVG: " << XL_AVG << endl;
-		cout << "XL_DIFF: " << XL_DIFF << endl;
-		cout << "SL_MINIM: " << SL_MINIM << endl;
-		cout << "SL_MAXIM: " << SL_MAXIM << endl;
+		// cout << "XL_AVG: " << XL_AVG << endl;
+		// cout << "XL_DIFF: " << XL_DIFF << endl;
+		// cout << "SL_MINIM: " << SL_MINIM << endl;
+		// cout << "SL_MAXIM: " << SL_MAXIM << endl;
 		set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_1B_ORDER, CONTROLS.ALCH_MIN);
 
 	 // Main loop for Chebyshev terms:
@@ -856,8 +856,8 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 		Tn   = new double [dim];
 		Tnd  = new double [dim];
 	
-		Tn_L   = new double [CONTROLS.ALCH_2B_ORDER];
-		Tnd_L  = new double [CONTROLS.ALCH_2B_ORDER];
+		Tn_L   = new double [CONTROLS.ALCH_2B_ORDER+1];
+		Tnd_L  = new double [CONTROLS.ALCH_2B_ORDER+1];
 
 	}
 
@@ -866,10 +866,10 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 		double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 		double SL_MINIM = CONTROLS.ALCH_MIN ;
 		double SL_MAXIM = CONTROLS.ALCH_MAX ;
-		cout << "XL_AVG: " << XL_AVG << endl;
-		cout << "XL_DIFF: " << XL_DIFF << endl;
-		cout << "SL_MINIM: " << SL_MINIM << endl;
-		cout << "SL_MAXIM: " << SL_MAXIM << endl;
+		// cout << "XL_AVG: " << XL_AVG << endl;
+		// cout << "XL_DIFF: " << XL_DIFF << endl;
+		// cout << "SL_MINIM: " << SL_MINIM << endl;
+		// cout << "SL_MAXIM: " << SL_MAXIM << endl;
 		set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_2B_ORDER, CONTROLS.ALCH_MIN);
 
 	 // Main loop for Chebyshev terms:
@@ -895,7 +895,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 
 			 //calculate vstart: (index for populating OO, OH, or HH column block of A).
 
-			 vstart = curr_pair_type_idx * FF_2BODY[curr_pair_type_idx].SNUM;
+			 vstart = curr_pair_type_idx * FF_2BODY[curr_pair_type_idx].SNUM*CONTROLS.ALCH_2B_ORDER;
 
 			 // Get pair distance
 
@@ -943,7 +943,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 					for ( int j=0; j < CONTROLS.ALCH_2B_ORDER; j++)
 					{
 						// Self-scaling needed for very small cells with self-interactions.  It is 1 for the big cell neighbor list.
-						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1]*Tn_L[j] + fcutderiv * Tn[i+1]*Tn_L[j] );
+						tmp_doub = NEIGHBOR_LIST.PERM_SCALE[2] * (fcut * Tnd[i+1] + fcutderiv * Tn[i+1])*Tn_L[j];
 
 						// Finally, account for the x, y, and z unit vectors
 						deriv = tmp_doub * RAB.X / rlen;
@@ -1064,10 +1064,16 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	double inv_vol = 1.0 / SYSTEM.BOXDIM.VOL;;
 
 	vector<CLUSTER> &PAIR_TRIPLETS = TRIPS.VEC ;
+	 std::cout << "1067" << std::endl;
 
-	vector<int> pair_index(3) ;
-	vector<double> x_diff(3), x_avg(3) ;
-	vector<int> atom_type_index(3) ;
+    vector<int> pair_index(3);
+	 std::cout << "1070" << std::endl;
+    vector<double>  x_avg(3);
+	 std::cout << "1072" << std::endl;
+    vector<double> x_diff(3);
+	 std::cout << "1074" << std::endl;
+    vector<int> atom_type_index(3);
+	std::cout << "1076" << std::endl;
 
 	if ( ! called_before ) 
 	{
@@ -1095,8 +1101,8 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 		Tnd_ik  = new double [dim];
 		Tnd_jk  = new double [dim];
 
-		Tn_L   = new double [CONTROLS.ALCH_3B_ORDER];
-		Tnd_L  = new double [CONTROLS.ALCH_3B_ORDER];
+		Tn_L   = new double [CONTROLS.ALCH_3B_ORDER+1];
+		Tnd_L  = new double [CONTROLS.ALCH_3B_ORDER+1];
 		
 	}
 
@@ -1105,10 +1111,10 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 	double SL_MINIM = CONTROLS.ALCH_MIN ;
 	double SL_MAXIM = CONTROLS.ALCH_MAX ;
-	cout << "XL_AVG: " << XL_AVG << endl;
-	cout << "XL_DIFF: " << XL_DIFF << endl;
-	cout << "SL_MINIM: " << SL_MINIM << endl;
-	cout << "SL_MAXIM: " << SL_MAXIM << endl;
+	// cout << "XL_AVG: " << XL_AVG << endl;
+	// cout << "XL_DIFF: " << XL_DIFF << endl;
+	// cout << "SL_MINIM: " << SL_MINIM << endl;
+	// cout << "SL_MAXIM: " << SL_MAXIM << endl;
 	set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_3B_ORDER, CONTROLS.ALCH_MIN);
 
 
@@ -1260,7 +1266,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 							vstart = n_2b_cheby_terms*CONTROLS.ALCH_2B_ORDER;
 			
 							for (int i=0; i<curr_triple_type_index; i++)
-								vstart += PAIR_TRIPLETS[i].N_TRUE_ALLOWED_POWERS;						
+								vstart += PAIR_TRIPLETS[i].N_TRUE_ALLOWED_POWERS*CONTROLS.ALCH_3B_ORDER;						
 							
 							PAIR_TRIPLETS[curr_triple_type_index].FORCE_CUTOFF.get_fcut(fcut_ij, fcutderiv_ij, rlen_ij, S_MINIM_IJ, S_MAXIM_IJ);
 							PAIR_TRIPLETS[curr_triple_type_index].FORCE_CUTOFF.get_fcut(fcut_ik, fcutderiv_ik, rlen_ik, S_MINIM_IK, S_MAXIM_IK);
@@ -1293,15 +1299,15 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 										set_3b_powers(PAIR_TRIPLETS[curr_triple_type_index], pair_index, i,
 															pow_ij, pow_ik, pow_jk) ;
 
-										deriv_ij =  fcut_ij * Tnd_ij[pow_ij]*Tn_L[j] + fcutderiv_ij * Tn_ij[pow_ij]*Tn_L[j] ;
-										deriv_ik =  fcut_ik * Tnd_ik[pow_ik]*Tn_L[j] + fcutderiv_ik * Tn_ik[pow_ik]*Tn_L[j] ;
-										deriv_jk =  fcut_jk * Tnd_jk[pow_jk]*Tn_L[j] + fcutderiv_jk * Tn_jk[pow_jk]*Tn_L[j] ;	
+										deriv_ij =  fcut_ij * Tnd_ij[pow_ij] + fcutderiv_ij * Tn_ij[pow_ij] ;
+										deriv_ik =  fcut_ik * Tnd_ik[pow_ik] + fcutderiv_ik * Tn_ik[pow_ik] ;
+										deriv_jk =  fcut_jk * Tnd_jk[pow_jk] + fcutderiv_jk * Tn_jk[pow_jk] ;	
 										
-										force_wo_coeff_ij = perm_scale * (deriv_ij * fcut_ik * fcut_jk * Tn_ik[pow_ik] * Tn_jk[pow_jk]);
+										force_wo_coeff_ij = perm_scale * (deriv_ij * fcut_ik * fcut_jk * Tn_ik[pow_ik] * Tn_jk[pow_jk])*Tn_L[j];
 										
-										force_wo_coeff_ik = perm_scale * (deriv_ik * fcut_ij * fcut_jk * Tn_ij[pow_ij] * Tn_jk[pow_jk]);
+										force_wo_coeff_ik = perm_scale * (deriv_ik * fcut_ij * fcut_jk * Tn_ij[pow_ij] * Tn_jk[pow_jk])*Tn_L[j];
 										
-										force_wo_coeff_jk = perm_scale * (deriv_jk * fcut_ij * fcut_ik * Tn_ij[pow_ij] * Tn_ik[pow_ik]) ;
+										force_wo_coeff_jk = perm_scale * (deriv_jk * fcut_ij * fcut_ik * Tn_ij[pow_ij] * Tn_ik[pow_ik])*Tn_L[j] ;
 								
 										// ij pairs
 
@@ -1519,8 +1525,8 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 		Tnd_jl  = new double [dim];
 		Tnd_kl  = new double [dim];
 		
-		Tn_L   = new double [CONTROLS.ALCH_4B_ORDER];
-		Tnd_L  = new double [CONTROLS.ALCH_4B_ORDER];
+		Tn_L   = new double [CONTROLS.ALCH_4B_ORDER+1];
+		Tnd_L  = new double [CONTROLS.ALCH_4B_ORDER+1];
 	}
 
 	// Alch lambda terms are frame wise so do the math out of the loop
@@ -1528,10 +1534,10 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 	double XL_DIFF = (CONTROLS.ALCH_MAX-CONTROLS.ALCH_MIN)/2.0 ;
 	double SL_MINIM = CONTROLS.ALCH_MIN ;
 	double SL_MAXIM = CONTROLS.ALCH_MAX ;
-	cout << "XL_AVG: " << XL_AVG << endl;
-	cout << "XL_DIFF: " << XL_DIFF << endl;
-	cout << "SL_MINIM: " << SL_MINIM << endl;
-	cout << "SL_MAXIM: " << SL_MAXIM << endl;
+	// cout << "XL_AVG: " << XL_AVG << endl;
+	// cout << "XL_DIFF: " << XL_DIFF << endl;
+	// cout << "SL_MINIM: " << SL_MINIM << endl;
+	// cout << "SL_MAXIM: " << SL_MAXIM << endl;
 	set_polys_alch(Tn_L, Tnd_L, SYSTEM.ALCH_LAMBDA, XL_DIFF, XL_AVG, CONTROLS.ALCH_4B_ORDER, CONTROLS.ALCH_MIN);
 
 
@@ -1720,7 +1726,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 					vstart = n_2b_cheby_terms*CONTROLS.ALCH_2B_ORDER + n_3b_cheby_terms*CONTROLS.ALCH_3B_ORDER;
 	
 					for (int i=0; i<curr_quad_type_index; i++)
-						vstart += PAIR_QUADRUPLETS[i].N_TRUE_ALLOWED_POWERS;	
+						vstart += PAIR_QUADRUPLETS[i].N_TRUE_ALLOWED_POWERS*CONTROLS.ALCH_4B_ORDER;	
 
 					for (int f=0; f<6; f++)
 						PAIR_QUADRUPLETS[curr_quad_type_index].FORCE_CUTOFF.get_fcut(fcut[f], fcut_deriv[f], rlen[f], S_MINIM[f], S_MAXIM[f]);
@@ -1744,19 +1750,19 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 								for (int f=0; f<6; f++)	
 									powers[f] = PAIR_QUADRUPLETS[curr_quad_type_index].ALLOWED_POWERS[i][pow_map[f]];
 								
-								deriv[0] = perm_scale * (fcut[0] * Tnd_ij[powers[0]] * Tn_L[j] + fcut_deriv[0] * Tn_ij[powers[0]]*Tn_L[j]) ;
-								deriv[1] = perm_scale * (fcut[1] * Tnd_ik[powers[1]] * Tn_L[j] + fcut_deriv[1] * Tn_ik[powers[1]]*Tn_L[j]) ;
-								deriv[2] = perm_scale * (fcut[2] * Tnd_il[powers[2]] * Tn_L[j] + fcut_deriv[2] * Tn_il[powers[2]]*Tn_L[j]) ;
-								deriv[3] = perm_scale * (fcut[3] * Tnd_jk[powers[3]] * Tn_L[j] + fcut_deriv[3] * Tn_jk[powers[3]]*Tn_L[j]) ;
-								deriv[4] = perm_scale * (fcut[4] * Tnd_jl[powers[4]] * Tn_L[j] + fcut_deriv[4] * Tn_jl[powers[4]]*Tn_L[j]) ;
-								deriv[5] = perm_scale * (fcut[5] * Tnd_kl[powers[5]] * Tn_L[j] + fcut_deriv[5] * Tn_kl[powers[5]]*Tn_L[j]) ;
+								deriv[0] = perm_scale * (fcut[0] * Tnd_ij[powers[0]] + fcut_deriv[0] * Tn_ij[powers[0]]) ;
+								deriv[1] = perm_scale * (fcut[1] * Tnd_ik[powers[1]] + fcut_deriv[1] * Tn_ik[powers[1]]) ;
+								deriv[2] = perm_scale * (fcut[2] * Tnd_il[powers[2]] + fcut_deriv[2] * Tn_il[powers[2]]) ;
+								deriv[3] = perm_scale * (fcut[3] * Tnd_jk[powers[3]] + fcut_deriv[3] * Tn_jk[powers[3]]) ;
+								deriv[4] = perm_scale * (fcut[4] * Tnd_jl[powers[4]] + fcut_deriv[4] * Tn_jl[powers[4]]) ;
+								deriv[5] = perm_scale * (fcut[5] * Tnd_kl[powers[5]] + fcut_deriv[5] * Tn_kl[powers[5]]) ;
 
-								force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-								force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-								force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-								force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]];
-								force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]];
-								force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]];
+								force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]] *Tn_L[j];
 
 								// ij pairs
 

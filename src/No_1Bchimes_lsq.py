@@ -62,7 +62,7 @@ def main():
     #############################################
 
     # Algorithms requiring sklearn.
-    sk_algos = ["lasso", "ridge", "lassolars", "lars", "ridgecv"] 
+    sk_algos = ["lasso", "ridge", "lassolars", "lars", "ridgecv"] ;
 
     if args.algorithm in sk_algos:
         from sklearn import linear_model
@@ -96,6 +96,7 @@ def main():
 
     elif ( (not args.split_files) and (not args.read_output) ) :
         A       = numpy.genfromtxt(args.A , dtype='float')
+        A[:, -1] = 0.0
         nlines  = A.shape[0] 
         np      = A.shape[1] 
         b       = numpy.genfromtxt(args.b, dtype='float') 
@@ -111,7 +112,7 @@ def main():
     else:
         
         if not args.read_output:
-            dimf = open("dim.0000.txt", "r") 
+            dimf = open("dim.0000.txt", "r") ;
             line = next(dimf) 
             dim  = (int(x) for x in line.split())
             A    = numpy.zeros((1,1),dtype=float)           # Dummy A matrix - NOT read in.

@@ -19,5 +19,11 @@ echo "Removing directory build"
 
 rm -rf build
 
-
-rm -rf $PREFX
+if [ ! -z $PREFX ] ; then 
+	echo "Removing files installed at $PREFX"
+	echo "This runs the command \"rm -rf $PREFX\""
+	echo "Are you sure you want to proceed?"
+	read -p "Press enter to continue"
+	
+	rm -rf $PREFX
+fi
