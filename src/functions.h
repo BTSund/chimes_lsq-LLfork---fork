@@ -285,7 +285,7 @@ public:
 		
 		COMPARE_FORCE     = false;	// is this variable really necessary for LSQ?
 		CALL_EWALD        = false;
-		FIT_FORCE         = false;
+		FIT_FORCE         = true;
 		FIT_ENER          = false;
 		FIT_STRESS        = false;
 		FIT_STRESS_ALL    = false;
