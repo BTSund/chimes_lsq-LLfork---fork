@@ -182,6 +182,8 @@ public:
 	///////////////////////////////////////////////
 
 	bool IS_LSQ;		      // Is this for an lsq run or actual md?
+	bool FIT_FORCE;	      // Should stress tensors be included in the fit? 
+	int  NFORCE;          // Only fit forces for first NFORCE frames of trajectory
 	bool FIT_STRESS;	      // Should stress tensors be included in the fit? --> This is ONLY for the diagonal components, xx, yy, zz
 	bool FIT_STRESS_ALL;	      // Should stress tensors be included in the fit? --> This is ONLY for ALL components, xx, xy, xz ... zz 
 	int  NSTRESS;		      // Only fit stresses for first NSTRESS frames of trajectory
@@ -283,9 +285,11 @@ public:
 		
 		COMPARE_FORCE     = false;	// is this variable really necessary for LSQ?
 		CALL_EWALD        = false;
+		FIT_FORCE         = false;
 		FIT_ENER          = false;
 		FIT_STRESS        = false;
 		FIT_STRESS_ALL    = false;
+		NFORCE            = -1;
 		NSTRESS           = -1;
 		NENER             = -1;
 		FORDFTB           = false;
