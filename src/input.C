@@ -550,10 +550,6 @@ void INPUT::PARSE_CONTROLS_FITFORCE(JOB_CONTROL & CONTROLS)
 				CONTROLS.FIT_FORCE = true;
 				CONTROLS.NFORCE    = convert_int(CONTENTS(i+1,1),i+1);
 			}			
-			else if (CONTENTS(i+1,0)=="all"  || CONTENTS(i+1,0)=="All"  || CONTENTS(i+1,0)=="ALL"  || CONTENTS(i+1,0) == "A" || CONTENTS(i+1,0) == "a")
-			{
-					CONTROLS.FIT_FORCE_ALL = true;
-			}
 			else
 				CONTROLS.FIT_FORCE = convert_bool(CONTENTS(i+1,0),i+1);
 
@@ -561,10 +557,8 @@ void INPUT::PARSE_CONTROLS_FITFORCE(JOB_CONTROL & CONTROLS)
 			{
 				cout << "	# FITFORCE #: ";		
 							
-				if (CONTROLS.FIT_FORCE_ALL)
-					cout << bool2str(CONTROLS.FIT_FORCE_ALL) << " ...will fit to all tensor components" << endl;	
-				else if(CONTROLS.NFORCE>0)
-					cout << bool2str(CONTROLS.FIT_FORCE) << " ...will only fit tensors for first " << CONTROLS.NFORCE << " frames." << endl;
+				if(CONTROLS.NFORCE>0)
+					cout << bool2str(CONTROLS.FIT_FORCE) << " ...will only fit force for first " << CONTROLS.NFORCE << " frames." << endl;
 				else 
 					cout << bool2str(CONTROLS.FIT_FORCE) << endl;
 			}
