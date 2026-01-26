@@ -1434,6 +1434,11 @@ void INPUT::RUN_SANITY_LSQ(JOB_CONTROL & CONTROLS)
 		
 	if((CONTROLS.FIT_STRESS || CONTROLS.FIT_STRESS_ALL) && CONTROLS.CALL_EWALD)
 		EXIT_MSG("ERROR: Inclusion of stress tensors currently not compatible with use of ZCalc_Ewald_Deriv.") ;
+
+	if (!CONTROLS.FIT_FORCE && !CONTROLS.FIT_ENER && !CONTROLS.FIT_STRESS)
+	{
+		EXIT_MSG("ERROR: Must fit to one of: force, energy, or stress") ;
+	}
 }
 		
 		

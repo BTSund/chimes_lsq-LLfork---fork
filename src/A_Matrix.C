@@ -97,19 +97,21 @@ void A_MAT::INITIALIZE_FORCES(int ATOMS, int NPARAM, bool FIT_FORCE)
 	if (FIT_FORCE)
 	{
 		FORCES.resize(ATOMS);
-	}
-	
-	for (int i=0; i<ATOMS; i++)
-	{
-		FORCES[i].resize(NPARAM);
-	
-		for (int j=0; j<NPARAM; j++)
+		
+		for (int i=0; i<ATOMS; i++)
 		{
-			FORCES[i][j].X = 0.0;
-			FORCES[i][j].Y = 0.0;
-			FORCES[i][j].Z = 0.0;
+			FORCES[i].resize(NPARAM);
+		
+			for (int j=0; j<NPARAM; j++)
+			{
+				FORCES[i][j].X = 0.0;
+				FORCES[i][j].Y = 0.0;
+				FORCES[i][j].Z = 0.0;
+			}
 		}
 	}
+	
+
 }
 
 void A_MAT::INITIALIZE_ENERGIES(int ATOMS,int PARAMS, bool FRAME_ENER)

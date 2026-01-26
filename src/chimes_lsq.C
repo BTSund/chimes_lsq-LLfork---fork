@@ -748,7 +748,7 @@ static int process_frame(	A_MAT &A_MATRIX,
 	 frame_log << "Processing frame " << i << endl ;
 	 auto time1 = std::chrono::system_clock::now() ;				
 	 
-	 A_MATRIX.INITIALIZE(CONTROLS, SYSTEM, ATOM_PAIRS.size(),ATOM_PAIRS) ;
+	 //A_MATRIX.INITIALIZE(CONTROLS, SYSTEM, ATOM_PAIRS.size(),ATOM_PAIRS) ;
 
 	 if (RANK == 0 && i == istart )
 	 {
@@ -779,6 +779,7 @@ static int process_frame(	A_MAT &A_MATRIX,
 			CONTROLS.FIT_ENER          = false;	
 	 }
 			
+	 A_MATRIX.INITIALIZE(CONTROLS, SYSTEM, ATOM_PAIRS.size(),ATOM_PAIRS) ;
 	 // This output is specific to the number of processors.
 		
 	 if(NPROCS==1)
