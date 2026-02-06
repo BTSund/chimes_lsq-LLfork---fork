@@ -997,7 +997,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 
 	 if (CONTROLS.FIT_STRESS)
 	 {	 
-		 for ( int i = 0; i < CONTROLS.TOT_SNUM; i++ ) 
+		 for ( int i = 0; i < CONTROLS.TOT_SNUM * CONTROLS.ALCH_2B_ORDER; i++ ) 
 		 {
 			 A_MATRIX.STRESSES[i].XX *= inv_vol;
 			 A_MATRIX.STRESSES[i].YY *= inv_vol;
@@ -1006,7 +1006,7 @@ void Cheby::Deriv_2B(A_MAT & A_MATRIX)
 	 }
 	 else if (CONTROLS.FIT_STRESS_ALL)
 	 {		
-		for ( int i = 0; i < CONTROLS.TOT_SNUM; i++ ) 
+		for ( int i = 0; i < CONTROLS.TOT_SNUM * CONTROLS.ALCH_2B_ORDER; i++ ) 
 		{
 			A_MATRIX.STRESSES[i].XX *= inv_vol;
 			A_MATRIX.STRESSES[i].XY *= inv_vol;
@@ -1067,16 +1067,11 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	double inv_vol = 1.0 / SYSTEM.BOXDIM.VOL;;
 
 	vector<CLUSTER> &PAIR_TRIPLETS = TRIPS.VEC ;
-	 std::cout << "1067" << std::endl;
 
     vector<int> pair_index(3);
-	 std::cout << "1070" << std::endl;
     vector<double>  x_avg(3);
-	 std::cout << "1072" << std::endl;
     vector<double> x_diff(3);
-	 std::cout << "1074" << std::endl;
     vector<int> atom_type_index(3);
-	std::cout << "1076" << std::endl;
 
 	if ( ! called_before ) 
 	{
@@ -1421,7 +1416,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	if (CONTROLS.FIT_STRESS)
 	{
 	
-		for(int i=0; i<CONTROLS.NUM_3B_CHEBY; i++) 
+		for(int i=0; i<CONTROLS.NUM_3B_CHEBY * CONTROLS.ALCH_3B_ORDER; i++) 
 		{
 			A_MATRIX.STRESSES[n_2b_cheby_terms+i].XX *= inv_vol;
 			A_MATRIX.STRESSES[n_2b_cheby_terms+i].YY *= inv_vol;
@@ -1431,7 +1426,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	
 	else if (CONTROLS.FIT_STRESS_ALL)
 	{
-		for(int i=0; i<CONTROLS.NUM_3B_CHEBY; i++) 
+		for(int i=0; i<CONTROLS.NUM_3B_CHEBY * CONTROLS.ALCH_3B_ORDER; i++) 
 		{
 			A_MATRIX.STRESSES[n_2b_cheby_terms+i].XX *= inv_vol;
 			A_MATRIX.STRESSES[n_2b_cheby_terms+i].XY *= inv_vol;
@@ -1895,7 +1890,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 	
 	if (CONTROLS.FIT_STRESS)
 	{
-		for(int i=0; i<CONTROLS.NUM_4B_CHEBY; i++) 
+		for(int i=0; i<CONTROLS.NUM_4B_CHEBY * CONTROLS.ALCH_4B_ORDER; i++) 
 		{
 			A_MATRIX.STRESSES[n_2b_cheby_terms + n_3b_cheby_terms+i].XX *= inv_vol;
 			A_MATRIX.STRESSES[n_2b_cheby_terms + n_3b_cheby_terms+i].YY *= inv_vol;
@@ -1905,7 +1900,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 	
 	else if (CONTROLS.FIT_STRESS_ALL)
 	{
-		for(int i=0; i<CONTROLS.NUM_4B_CHEBY; i++) 
+		for(int i=0; i<CONTROLS.NUM_4B_CHEBY * CONTROLS.ALCH_4B_ORDER; i++) 
 		{
 			A_MATRIX.STRESSES[n_2b_cheby_terms + n_3b_cheby_terms+i].XX *= inv_vol;
 			A_MATRIX.STRESSES[n_2b_cheby_terms + n_3b_cheby_terms+i].XY *= inv_vol;
