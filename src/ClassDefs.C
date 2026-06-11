@@ -147,9 +147,10 @@ void NEIGHBORS::DO_UPDATE_SMALL(FRAME & SYSTEM, JOB_CONTROL & CONTROLS)
 	// PERM_SCALE[n] is the scaling factor for the n-body interaction.
 	PERM_SCALE[0] = 1.0 ;
 	PERM_SCALE[1] = 1.0 ;	
-	for ( int j = 2 ; j < PERM_SCALE.size() ; j++ ) {
+	PERM_SCALE[2] = 1.0 ;
+	for ( int j = 3 ; j < PERM_SCALE.size() ; j++ ) {
 		PERM_SCALE[j] = PERM_SCALE[j-1] / j ;
-	}
+	}	
 	
 	if(!FIRST_CALL)	// Clear out the second dimension so we can start over again
 	{
@@ -367,20 +368,23 @@ void NEIGHBORS::DO_UPDATE_BIG(FRAME & SYSTEM, JOB_CONTROL & CONTROLS)
 						if (rlen < MAX_CUTOFF + RCUT_PADDING)		
 							LIST_UNORDERED[a1].push_back(a2);	
 						
-						if ( a1 <= SYSTEM.PARENT[a2] ) 
+												// Keep unique-pair ownership rule for 2B and Ewald lists.
+						if ( a1 != SYSTEM.PARENT[a2] ) 
 						{
 							if (rlen < (MAX_CUTOFF + RCUT_PADDING) )		
 								LIST[a1].push_back(a2);		
 
 							if (rlen < (EWALD_CUTOFF + RCUT_PADDING) )
-								LIST_EWALD[a1].push_back(a2);		
+								LIST_EWALD[a1].push_back(a2);
+						}
 
-							if(rlen < MAX_CUTOFF_3B + RCUT_PADDING)	
-								LIST_3B[a1].push_back(a2);
+						// Atom-centered many-body neighbor lists:
+						// center atom a1 must see all neighbors, regardless of parent ordering.
+						if(rlen < MAX_CUTOFF_3B + RCUT_PADDING)	
+							LIST_3B[a1].push_back(a2);
 							
-							if(rlen < MAX_CUTOFF_4B + RCUT_PADDING)	
-								LIST_4B[a1].push_back(a2);	
-						}	
+						if(rlen < MAX_CUTOFF_4B + RCUT_PADDING)	
+							LIST_4B[a1].push_back(a2);
 					}
 				}
 			}
@@ -1535,7 +1539,7 @@ void NEIGHBORS::UPDATE_3B_INTERACTION(FRAME & SYSTEM, JOB_CONTROL &CONTROLS)
 				{
 					continue;
 				}
-				else if ( PERM_SCALE[3] == 1.0 && SYSTEM.PARENT[aj] > SYSTEM.PARENT[ak] )
+				else if (SYSTEM.PARENT[aj] > SYSTEM.PARENT[ak] )
 				{
 					 continue ;
 				}
@@ -1585,7 +1589,7 @@ void NEIGHBORS::UPDATE_4B_INTERACTION(FRAME & SYSTEM, JOB_CONTROL &CONTROLS)
 			  if (aj == ak )
 				 continue;
 
-			  if( PERM_SCALE[4] == 1.0 && SYSTEM.PARENT[aj] > SYSTEM.PARENT[ak] )
+			  if(SYSTEM.PARENT[aj] > SYSTEM.PARENT[ak] )
 				 continue;
 
 			  if( get_dist(SYSTEM, RAB, aj, ak) >  MAX_CUTOFF_4B + RCUT_PADDING)
@@ -1600,7 +1604,7 @@ void NEIGHBORS::UPDATE_4B_INTERACTION(FRAME & SYSTEM, JOB_CONTROL &CONTROLS)
 					if (aj == al || ak == al)
 						continue;
 					
-					if( PERM_SCALE[4] == 1.0 && (SYSTEM.PARENT[ak] > SYSTEM.PARENT[al] || SYSTEM.PARENT[aj] > SYSTEM.PARENT[al]) )
+					if((SYSTEM.PARENT[ak] > SYSTEM.PARENT[al] || SYSTEM.PARENT[aj] > SYSTEM.PARENT[al]) )
 						continue;
 					
 					// We know ij, ik, il, and jk distances are within the allowed cutoffs, but we still need to check jl, and kl

@@ -188,7 +188,7 @@ def main():
         # Process output
 
         dmax = 0.0
-
+        print(Dmat)
         for i in range(0,len(Dmat)):
             if ( abs(D[i]) > dmax ) :
                 dmax = abs(D[i])

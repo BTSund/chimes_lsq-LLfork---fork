@@ -1077,6 +1077,8 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 	{
 		called_before = true;
 		int dim = 0;
+		n_2b_cheby_terms = 0;
+		n_3b_cheby_terms = 0;
 
 		
 		for ( int i = 0; i < FF_2BODY.size(); i++ ) 
@@ -1161,7 +1163,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 				if ( a3 == a2 )
 				{
 					 continue ;
-				} else if ( perm_scale == 1.0 && SYSTEM.PARENT[a2] > SYSTEM.PARENT[a3] ) {
+				} else if ( SYSTEM.PARENT[a2] > SYSTEM.PARENT[a3] ) {
 					 continue;
 				}
 
@@ -1193,7 +1195,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 				S_MAXIM_IJ = PAIR_TRIPLETS[curr_triple_type_index].S_MAXIM[pair_index[0]] ;
 				S_MAXIM_IK = PAIR_TRIPLETS[curr_triple_type_index].S_MAXIM[pair_index[1]] ;
-				S_MAXIM_JK = PAIR_TRIPLETS[curr_triple_type_index].S_MAXIM[pair_index[2]] ;
+				S_MAXIM_JK = S_MAXIM_IJ + S_MAXIM_IK;
 				
 				S_MINIM_IJ = PAIR_TRIPLETS[curr_triple_type_index].S_MINIM[pair_index[0]] ;
 				S_MINIM_IK = PAIR_TRIPLETS[curr_triple_type_index].S_MINIM[pair_index[1]] ;
@@ -1242,19 +1244,54 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 							// Begin setting up the derivative calculation
 
 							// Set up the polynomials
-			
-							for ( int jj = 0 ; jj < 3 ; jj++ ) 
+
+							// Set up the polynomial transform ranges.
+							// For atom-centered 3B, JK uses a derived outer cutoff,
+							// so recompute x_avg/x_diff from the actual S_MINIM/S_MAXIM values.
+
 							{
-							  x_avg [jj] = PAIR_TRIPLETS[curr_triple_type_index].X_AVG [pair_index[jj]] ;
-							  x_diff[jj] = PAIR_TRIPLETS[curr_triple_type_index].X_DIFF[pair_index[jj]] ;
-							}							
+								double x_min_tmp, x_max_tmp;
+
+								Cheby::set_cheby_params(
+									S_MINIM_IJ,
+									S_MAXIM_IJ,
+									FF_2BODY[curr_pair_type_idx_ij].LAMBDA,
+									FF_2BODY[curr_pair_type_idx_ij].CHEBY_TYPE,
+									x_min_tmp,
+									x_max_tmp,
+									x_diff[0],
+									x_avg[0]
+								);
+
+								Cheby::set_cheby_params(
+									S_MINIM_IK,
+									S_MAXIM_IK,
+									FF_2BODY[curr_pair_type_idx_ik].LAMBDA,
+									FF_2BODY[curr_pair_type_idx_ik].CHEBY_TYPE,
+									x_min_tmp,
+									x_max_tmp,
+									x_diff[1],
+									x_avg[1]
+								);
+
+								Cheby::set_cheby_params(
+									S_MINIM_JK,
+									S_MAXIM_JK,
+									FF_2BODY[curr_pair_type_idx_jk].LAMBDA,
+									FF_2BODY[curr_pair_type_idx_jk].CHEBY_TYPE,
+									x_min_tmp,
+									x_max_tmp,
+									x_diff[2],
+									x_avg[2]
+								);
+							}
 							
 							set_polys(curr_pair_type_idx_ij, Tn_ij, Tnd_ij, rlen_ij, x_diff[0], x_avg[0],
 									  FF_2BODY[curr_pair_type_idx_ij].SNUM_3B_CHEBY, S_MINIM_IJ) ;
 							set_polys(curr_pair_type_idx_ik, Tn_ik, Tnd_ik, rlen_ik, x_diff[1], x_avg[1],
 									  FF_2BODY[curr_pair_type_idx_ik].SNUM_3B_CHEBY, S_MINIM_IK) ;
 							set_polys(curr_pair_type_idx_jk, Tn_jk, Tnd_jk, rlen_jk, x_diff[2], x_avg[2],
-									  FF_2BODY[curr_pair_type_idx_jk].SNUM_3B_CHEBY, S_MINIM_JK);			
+									  FF_2BODY[curr_pair_type_idx_jk].SNUM_3B_CHEBY, S_MINIM_JK);	
 
 							// At this point we've completed all pre-calculations needed to populate the A matrix. Now we need to figure out 
 							// where within the matrix to put the data, and to do so. 
@@ -1299,11 +1336,11 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 										deriv_ij =  fcut_ij * Tnd_ij[pow_ij] + fcutderiv_ij * Tn_ij[pow_ij] ;
 										deriv_ik =  fcut_ik * Tnd_ik[pow_ik] + fcutderiv_ik * Tn_ik[pow_ik] ;
-										deriv_jk =  fcut_jk * Tnd_jk[pow_jk] + fcutderiv_jk * Tn_jk[pow_jk] ;	
+										deriv_jk = Tnd_jk[pow_jk];
 										
-										force_wo_coeff_ij = perm_scale * (deriv_ij * fcut_ik * fcut_jk * Tn_ik[pow_ik] * Tn_jk[pow_jk])*Tn_L[j];
+										force_wo_coeff_ij = perm_scale * (deriv_ij * fcut_ik *  Tn_ik[pow_ik] * Tn_jk[pow_jk])*Tn_L[j];
 										
-										force_wo_coeff_ik = perm_scale * (deriv_ik * fcut_ij * fcut_jk * Tn_ij[pow_ij] * Tn_jk[pow_jk])*Tn_L[j];
+										force_wo_coeff_ik = perm_scale * (deriv_ik * fcut_ij *  Tn_ij[pow_ij] * Tn_jk[pow_jk])*Tn_L[j];
 										
 										force_wo_coeff_jk = perm_scale * (deriv_jk * fcut_ij * fcut_ik * Tn_ij[pow_ij] * Tn_ik[pow_ik])*Tn_L[j] ;
 								
@@ -1401,7 +1438,7 @@ void Cheby::Deriv_3B(A_MAT & A_MATRIX, CLUSTER_LIST &TRIPS)
 
 										if(CONTROLS.FIT_ENER) 
 										{
-											A_MATRIX.FRAME_ENERGIES[vstart+row_offset] += fcut_ij * fcut_ik * fcut_jk * Tn_ij[pow_ij] * Tn_ik[pow_ik] * Tn_jk[pow_jk] * Tn_L[j] * perm_scale ;
+											A_MATRIX.FRAME_ENERGIES[vstart+row_offset] += fcut_ij * fcut_ik * Tn_ij[pow_ij] * Tn_ik[pow_ik] * Tn_jk[pow_jk] * Tn_L[j] * perm_scale ;
 										}
 									}
 									}
@@ -1585,7 +1622,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 				if ( a3 == a2 )
 				{
 					 continue ;
-				} else if ( perm_scale == 1.0 && SYSTEM.PARENT[a2] > SYSTEM.PARENT[a3] ) {
+				} else if ( SYSTEM.PARENT[a2] > SYSTEM.PARENT[a3] ) {
 					 continue;
 				}
 				
@@ -1601,7 +1638,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 					if ( a2 == a4  || a3 == a4 )
 					{
 						 continue;
-					} else if ( perm_scale == 1.0 && SYSTEM.PARENT[a3] > SYSTEM.PARENT[a4] )
+					} else if ( SYSTEM.PARENT[a3] > SYSTEM.PARENT[a4] )
 					{
 						 continue ;
 					}
@@ -1649,17 +1686,51 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 					// Determine the inner and outer cutoffs for each pair type in the quadruplet
 
 					//SET_4B_CHEBY_POWERS(PAIR_QUADRUPLETS[curr_quad_type_index],ATOM_TYPE, pow_map);					
-					// map_indices(PAIR_QUADRUPLETS[curr_quad_type_index],ATOM_TYPE, pow_map);					
-
-					// map_indices_int(PAIR_QUADRUPLETS[curr_quad_type_index],atom_type_idx, pow_map);					
+					// map_indices(PAIR_QUADRUPLETS[curr_quad_type_index],ATOM_TYPE, pow_map);		
+					// Determine the mapping from actual pair order to the stored quadruplet pair order.
 					for (int f=0; f<6; f++)
 					{
-					  pow_map[f] = QUADS.PAIR_INDICES[ATOM_QUAD_ID_INT][f] ;
-					  S_MAXIM[f] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MAXIM[pow_map[f]] ;
-					  S_MINIM[f] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MINIM[pow_map[f]] ;
-					  x_diff [f] = PAIR_QUADRUPLETS[curr_quad_type_index].X_DIFF [pow_map[f]] ;
-					  x_avg  [f] = PAIR_QUADRUPLETS[curr_quad_type_index].X_AVG  [pow_map[f]] ;
+						pow_map[f] = QUADS.PAIR_INDICES[ATOM_QUAD_ID_INT][f];
 					}
+
+					// Set inner cutoffs from stored values.
+					for (int f=0; f<6; f++)
+					{
+						S_MINIM[f] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MINIM[pow_map[f]];
+					}
+
+					// Atom-centered 4B:
+					// outer cutoffs for center-neighbor pairs come from stored values,
+					// while non-center pairs use derived outer cutoffs.
+					// Pair ordering:
+					// 0=ij, 1=ik, 2=il, 3=jk, 4=jl, 5=kl
+					S_MAXIM[0] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MAXIM[pow_map[0]];
+					S_MAXIM[1] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MAXIM[pow_map[1]];
+					S_MAXIM[2] = PAIR_QUADRUPLETS[curr_quad_type_index].S_MAXIM[pow_map[2]];
+					S_MAXIM[3] = S_MAXIM[0] + S_MAXIM[1];
+					S_MAXIM[4] = S_MAXIM[0] + S_MAXIM[2];
+					S_MAXIM[5] = S_MAXIM[1] + S_MAXIM[2];
+
+					// Recompute Chebyshev transform ranges from the actual cutoff windows.
+					{
+						double x_min_tmp, x_max_tmp;
+
+						for (int f=0; f<6; f++)
+						{
+							Cheby::set_cheby_params(
+								S_MINIM[f],
+								S_MAXIM[f],
+								FF_2BODY[curr_pair_type_idx[f]].LAMBDA,
+								FF_2BODY[curr_pair_type_idx[f]].CHEBY_TYPE,
+								x_min_tmp,
+								x_max_tmp,
+								x_diff[f],
+								x_avg[f]
+							);
+						}
+					}	
+
+					
 						
 					// Before doing any polynomial/coeff set up, make sure that all ij, ik, and jk distances are within the allowed range.
 					// Unlike the 2-body Cheby, extrapolation/refitting to handle behavior outside of fitting regime is not straightforward.
@@ -1754,16 +1825,16 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 								deriv[0] = perm_scale * (fcut[0] * Tnd_ij[powers[0]] + fcut_deriv[0] * Tn_ij[powers[0]]) ;
 								deriv[1] = perm_scale * (fcut[1] * Tnd_ik[powers[1]] + fcut_deriv[1] * Tn_ik[powers[1]]) ;
 								deriv[2] = perm_scale * (fcut[2] * Tnd_il[powers[2]] + fcut_deriv[2] * Tn_il[powers[2]]) ;
-								deriv[3] = perm_scale * (fcut[3] * Tnd_jk[powers[3]] + fcut_deriv[3] * Tn_jk[powers[3]]) ;
-								deriv[4] = perm_scale * (fcut[4] * Tnd_jl[powers[4]] + fcut_deriv[4] * Tn_jl[powers[4]]) ;
-								deriv[5] = perm_scale * (fcut[5] * Tnd_kl[powers[5]] + fcut_deriv[5] * Tn_kl[powers[5]]) ;
+								deriv[3] = perm_scale * Tnd_jk[powers[3]];
+								deriv[4] = perm_scale * Tnd_jl[powers[4]];
+								deriv[5] = perm_scale * Tnd_kl[powers[5]];
 
-								force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
-								force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
-								force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * fcut[3] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
-								force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * fcut[4] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
-								force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[5]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]] *Tn_L[j];
-								force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * fcut[3] * fcut[4]  * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]] *Tn_L[j];
+								force_wo_coeff[0] = deriv[0] * fcut[1] * fcut[2] * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[1] = deriv[1] * fcut[0] * fcut[2] * Tn_ij[powers[0]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[2] = deriv[2] * fcut[0] * fcut[1] * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[3] = deriv[3] * fcut[0] * fcut[1] * fcut[2] * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jl[powers[4]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[4] = deriv[4] * fcut[0] * fcut[1] * fcut[2] * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_kl[powers[5]] *Tn_L[j];
+								force_wo_coeff[5] = deriv[5] * fcut[0] * fcut[1] * fcut[2] * Tn_ij[powers[0]]  * Tn_ik[powers[1]]  * Tn_il[powers[2]]  * Tn_jk[powers[3]]  * Tn_jl[powers[4]] *Tn_L[j];
 
 								if (CONTROLS.FIT_FORCE)
 								{
@@ -1850,10 +1921,10 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 									for (int f=0; f<6; f++)
 									{
 										A_MATRIX.STRESSES[vstart+row_offset].XX -= force_wo_coeff[f] * RAB[f].X * RAB[f].X / rlen[f];
-											A_MATRIX.STRESSES[vstart+row_offset].XY -= force_wo_coeff[f] * RAB[f].X * RAB[f].Y / rlen[f];
+										A_MATRIX.STRESSES[vstart+row_offset].XY -= force_wo_coeff[f] * RAB[f].X * RAB[f].Y / rlen[f];
 										A_MATRIX.STRESSES[vstart+row_offset].XZ -= force_wo_coeff[f] * RAB[f].X * RAB[f].Z / rlen[f];	   
 									
-											A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
+										A_MATRIX.STRESSES[vstart+row_offset].YY -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Y / rlen[f];
 										A_MATRIX.STRESSES[vstart+row_offset].YZ -= force_wo_coeff[f] * RAB[f].Y * RAB[f].Z / rlen[f];	   
 										A_MATRIX.STRESSES[vstart+row_offset].ZZ -= force_wo_coeff[f] * RAB[f].Z * RAB[f].Z / rlen[f];
 									}	
@@ -1861,10 +1932,7 @@ void Cheby::Deriv_4B(A_MAT & A_MATRIX, int n_3b_cheby_terms, CLUSTER_LIST& QUADS
 								
 								TMP_ENER  = fcut[0] 
 										* fcut[1] 
-									* fcut[2] 
-									* fcut[3] 
-									* fcut[4] 
-									* fcut[5];
+									* fcut[2];
 
 								TMP_ENER *= perm_scale ;
 									
