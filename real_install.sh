@@ -42,11 +42,34 @@ fi
 ICC=`which g++` # Default option in case impi unavailable
 MPI=`which mpicxx`
 
-
+if [ ! -v hosttype ] ; then
+    echo "No hosttype specified"
+    echo "Be sure to load modules/configure compilers by hand before running this script!"
+elif [[ "$hosttype" == "LLNL-LC" ]] ; then
     source modfiles/LLNL-LC.mod
     ICC=`which icc`    
     MPI=`which mpicxx`    
-
+elif [[ "$hosttype" == "UM-ARC" ]] ; then
+    source modfiles/UM-ARC.mod
+    ICC=`which icc`    
+    MPI=`which mpicxx`    
+elif [[ "$hosttype" == "JHU-ARCH" ]] ; then
+    source modfiles/JHU-ARCH.mod
+    ICC=`which icc`
+    MPI=`which mpicxx`   
+elif [[ "$hosttype" == "UT-TACC" ]] ; then
+    source modfiles/UT-TACC.mod
+else
+    echo ""
+    echo "ERROR: Unknown hosttype ($hosttype) specified"
+    echo ""
+    echo "Valid options are:"
+    for i in `ls modfiles`; do echo "   ${i%.mod}"; done
+    echo ""
+    echo "Please run again with: export hosttype=<host type>; ./install.sh"
+    echo "Or manually load modules and run with: ./install.sh"
+    exit 0
+fi
 
 echo "Detected hosttype $hosttype"
 module list
@@ -60,8 +83,18 @@ fi
 
 # Compile dlars if mpi compilers are available on a HPC platform
 
+if [[ -v hosttype ]] ; then
     cd contrib/dlars/src
+    
+    if [[ "$hosttype" == "LLNL-LC" ]] ; then
         make
+    elif [[ "$hosttype" == "UM-ARC" ]] ; then
+        make CXX=mpiicpc
+    elif [[ "$hosttype" == "UT-TACC" ]] ; then
+        make
+    fi    
+    cd - 2>&1> /dev/null
+fi
 
 # Compile molanal
 
@@ -89,7 +122,11 @@ if [ ! -z $PREFX ] ; then
         my_flags="-DCMAKE_INSTALL_PREFIX=${PREFX}"
 fi
 
+if [ $DEBUG -eq 1 ] ;then
     my_flags="${my_flags} -Wall -DCMAKE_BUILD_TYPE=Debug"
+else
+    my_flags="${my_flags} -DCMAKE_BUILD_TYPE=Release"
+fi
 
 if   [ $VERBO -eq 0 ] ;then
         my_flags="${my_flags} -DVERBOSITY=0" 
